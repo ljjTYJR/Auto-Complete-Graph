@@ -211,7 +211,7 @@ class GraphMapFuserNode {
     ros::Time time_now, time_last_itr;
     ros::Publisher map_publisher_, laser_publisher_, point2_publisher_,
         odom_publisher_, adjusted_odom_publisher_, fuser_odom_publisher_,
-        graph_map_vector_;
+        graph_map_vector_, occupancy_grid_map_publisher_;
     nav_msgs::Odometry fuser_odom, adjusted_odom_msg;
     Eigen::Affine3d last_odom, this_odom, last_gt_pose;
 
@@ -379,6 +379,7 @@ class GraphMapFuserNode {
         adjusted_odom_msg.header.frame_id = world_link_id;
         laser_publisher_ = param_nh.advertise<sensor_msgs::LaserScan>(
             "laserscan_in_fuser_frame", 50);
+        occupancy_grid_map_publisher_ = param_nh.advertise<nav_msgs::OccupancyGrid>("occupancy_grid_map", 10);
 
         point2_publisher_ =
             param_nh.advertise<sensor_msgs::PointCloud2>("point2_fuser", 15);
@@ -604,12 +605,6 @@ class GraphMapFuserNode {
             *(fuser_->GetGraph()), vector_maps, world_link_id);
         graph_map_vector_.publish(vector_maps);
 
-        // Save the new pose associated with the node.
-        //		assert(nb_of_node_new - 1 > 0);
-
-        //				 acg_localization->savePos(nb_of_node_new -
-        //1);
-        ROS_DEBUG("PUBLISH: now");
         // Publish message
         graph_map_custom_msgs::GraphMapMsg graphmapmsg;
         perception_oru::graph_map::graphMapToMsg(*(fuser_->GetGraph()),
@@ -715,7 +710,8 @@ class GraphMapFuserNode {
         bool forceSIR = false;
 
         ROS_INFO("INIT MCL FROM TF");
-        auto init_pose = getPoseTFTransform(world_link_id, laser_link_id);
+        // Since the point cloud is converted to robot frame, here we initialize with the robot_frame
+        auto init_pose = getPoseTFTransform(world_link_id, robot_frame);
         //		std::cout << "Pose found " << pose_.matrix() <<
         //std::endl;
 
@@ -754,23 +750,8 @@ class GraphMapFuserNode {
         acg_localization->useHybridStrategy(_use_hybrid_strategy_mcl);
         acg_localization->useMeanOfAllScores(_use_mean_score_mcl);
 
-        auto sensorpose_tmp = getPoseTFTransform(robot_frame, laser_link_id);
-        // Only do the rotation:
-        double x = sensorpose_tmp.getOrigin().getX();
-        double y = sensorpose_tmp.getOrigin().getY();
-        double z = sensorpose_tmp.getOrigin().getZ();
-        //			std::cout << "xyz : " << x << " " << y << " " << z
-        //<< std::endl; TEST
-        // 	x = 16.6;
-        // 	y = 3.0;
-        double rollt, pitcht, yawt;
-        sensorpose_tmp.getBasis().getRPY(rollt, pitcht, yawt);
-
-        Eigen::Affine3d sensorpose =
-            Eigen::Translation<double, 3>(x, y, z) *
-            Eigen::AngleAxis<double>(yawt, Eigen::Vector3d::UnitZ()) *
-            Eigen::AngleAxis<double>(pitcht, Eigen::Vector3d::UnitY()) *
-            Eigen::AngleAxis<double>(rollt, Eigen::Vector3d::UnitX());
+        // no need to set sensor pose matrix
+        auto sensorpose = Eigen::Affine3d::Identity();
         acg_localization->setSensorPose(sensorpose);
 
         // 		perception_oru::particle_filter* pMCL = new
@@ -815,20 +796,8 @@ class GraphMapFuserNode {
         const pcl::PointCloud<pcl::PointXYZ>& cloud,
         ros::Time time = ros::Time::now()) {
         if (mcl_loaded_ = true) {
-            auto sensorpose_tmp =
-                getPoseTFTransform(robot_frame, laser_link_id);
-            // Only do the rotation:
-            double x = sensorpose_tmp.getOrigin().getX();
-            double y = sensorpose_tmp.getOrigin().getY();
-            double z = sensorpose_tmp.getOrigin().getZ();
-            double roll, pitch, yaw;
-            sensorpose_tmp.getBasis().getRPY(roll, pitch, yaw);
-
-            Eigen::Affine3d sensorpose =
-                Eigen::Translation<double, 3>(x, y, z) *
-                Eigen::AngleAxis<double>(yaw, Eigen::Vector3d::UnitZ()) *
-                Eigen::AngleAxis<double>(pitch, Eigen::Vector3d::UnitY()) *
-                Eigen::AngleAxis<double>(roll, Eigen::Vector3d::UnitX());
+            // Since the point cloud has been transformed already, the sensor pose is set to identity
+            auto sensorpose = Eigen::Affine3d::Identity();
             Eigen::Matrix3d cov;
             Eigen::Vector3d mean;
 
@@ -994,10 +963,11 @@ class GraphMapFuserNode {
                 if (init_pose_tf_ == true && init_fuser_ == false) {
                     ROS_DEBUG("INIT FROM TF");
                     pose_ = getPose(world_link_id, robot_frame);
-                    sensorPose_ = getPose(robot_frame, laser_link_id);
+                    // sensorPose_ = getPose(robot_frame, laser_link_id);
+                    auto sensorPose_tmp = Eigen::Affine3d::Identity();
                     assert(fuser_ == NULL);
                     fuser_ = new GraphMapFuser(map_type_name, reg_type_name,
-                                               pose_, sensorPose_);
+                                               pose_, sensorPose_tmp);
                     ROS_DEBUG_STREAM(
                         "----------------------------FUSER---------------------"
                         "---");
@@ -1047,13 +1017,6 @@ class GraphMapFuserNode {
                 m.unlock();
                 tf::Transform Transform;
                 tf::transformEigenToTF(pose_, Transform);
-
-                // 	std::cout << "POSE NOW" << pose_.matrix() << std::endl;
-                std::cout << "Transform " << Transform.getOrigin().getX() << " "
-                          << Transform.getOrigin().getY() << " "
-                          << Transform.getOrigin().getZ() << " between "
-                          << world_link_id << " " << fuser_base_link_id
-                          << std::endl;
 
                 tf_.sendTransform(tf::StampedTransform(
                     Transform, time, world_link_id, fuser_base_link_id));
@@ -1243,6 +1206,7 @@ class GraphMapFuserNode {
                 pcl_cloud.points.push_back(pt);
             }
         }
+        pcl::transformPointCloud(pcl_cloud, pcl_cloud, sensorPose_);
         this->processFrame(pcl_cloud, Tm, msg_in->header.stamp);
         ROS_DEBUG_STREAM("publish fuser data");
     }
@@ -1261,7 +1225,6 @@ class GraphMapFuserNode {
                                  odo_in)  // callback is used in conjunction
                                           // with odometry time filter.
     {
-        //	  std::cout << "This function " << std::endl;
         ros::Time tstart = ros::Time::now();
 
         tf::poseMsgToEigen(odo_in->pose.pose, this_odom);
@@ -1278,13 +1241,10 @@ class GraphMapFuserNode {
         pcl::fromROSMsg(*msg_in, cloud);
         this->processFrame(cloud, Tm, msg_in->header.stamp);
         ros::Time tend = ros::Time::now();
-        //    cout<<"Total execution time= "<<tend-tstart<<endl;
     }
     void points2OdomCallbackTF(
         const sensor_msgs::PointCloud2::ConstPtr&
-            msg_in) {  // this callback is used to look up tf transformation for
-                       // scan data
-        //	  cout<<"point odom callback tf"<<endl;
+            msg_in) {
         Eigen::Affine3d Tm;
         static bool last_odom_found = false;
         pcl::PointCloud<pcl::PointXYZ> cloud;
@@ -1301,7 +1261,6 @@ class GraphMapFuserNode {
 
         last_odom = this_odom;
         this->processFrame(cloud, Tm, msg_in->header.stamp);
-        //    cout<<"TF callback Point2Odom"<<endl;
     }
 
     void GTLaserPointsOdomCallback(

@@ -438,25 +438,31 @@ nav_msgs::OccupancyGrid::Ptr createOccupancyMap(
     if (size_rl > 0) {
         perception_oru::toOccupancyGrid(
             oacg.getRobotPoseLocalization()[size_rl - 1]->getMap().get(),
-            *occ_out, 0.1, "/world");
+            *occ_out, 0.1, "fuser_base_link");
     }
     std::cout << "Occupancy grid sent ! " << std::endl;
     return occ_out;
 }
 
 void sendMapAsOcc(const AASS::acg::AutoCompleteGraphLocalization& oacg) {
-    if (updated == true) {
-        occ_map_global = createOccupancyMap(oacg);
-        updated = false;
-    }
-    // Just to make sure
+    // if (updated == true) {
+    //     occ_map_global = createOccupancyMap(oacg);
+    //     updated = false;
+    // }
+    occ_map_global = createOccupancyMap(oacg);
+    std::cout << "Sending the global occupancy grid map. <======just for test======> 2/2" << std::endl;
     occ_send.publish<nav_msgs::OccupancyGrid>(*occ_map_global);
 }
 
 void latchOccGrid(const std_msgs::Bool::ConstPtr msg,
                   AASS::acg::AutoCompleteGraphLocalization* oacg) {
-    if (msg->data == true) {
+    std::cout << "Entering latchOccGrid. <======just for test======>" << std::endl;
+    bool sendGlobalOccupancyGrid = msg->data;
+    if (sendGlobalOccupancyGrid) {
+        std::cout << "Sending the global occupancy grid map. <======just for test======> 1/2" << std::endl;
         sendMapAsOcc(*oacg);
+    } else {
+        std::cout << "Fail: Sending the global occupancy grid map. <======just for test======>" << std::endl;
     }
 }
 
