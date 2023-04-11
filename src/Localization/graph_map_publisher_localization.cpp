@@ -211,7 +211,7 @@ class GraphMapFuserNode {
     ros::Time time_now, time_last_itr;
     ros::Publisher map_publisher_, laser_publisher_, point2_publisher_,
         odom_publisher_, adjusted_odom_publisher_, fuser_odom_publisher_,
-        graph_map_vector_, occupancy_grid_map_publisher_;
+        graph_map_vector_, occupancy_grid_map_publisher_, graph_map_ndt_map_pub_;
     nav_msgs::Odometry fuser_odom, adjusted_odom_msg;
     Eigen::Affine3d last_odom, this_odom, last_gt_pose;
 
@@ -379,8 +379,10 @@ class GraphMapFuserNode {
         adjusted_odom_msg.header.frame_id = world_link_id;
         laser_publisher_ = param_nh.advertise<sensor_msgs::LaserScan>(
             "laserscan_in_fuser_frame", 50);
-        occupancy_grid_map_publisher_ = param_nh.advertise<nav_msgs::OccupancyGrid>("occupancy_grid_map", 10);
+        occupancy_grid_map_publisher_ = param_nh.advertise<nav_msgs::OccupancyGrid>("latest_occupancy_grid_map", 10);
 
+        graph_map_ndt_map_pub_ = param_nh.advertise<ndt_map::NDTMapMsg>(
+            "graph_map_ndt_map", 10);
         point2_publisher_ =
             param_nh.advertise<sensor_msgs::PointCloud2>("point2_fuser", 15);
         fuser_odom_publisher_ =
@@ -598,6 +600,19 @@ class GraphMapFuserNode {
         ROS_INFO("All init done 1");
     }
 
+    void transformOccupancyGridMapMsgOrigin(nav_msgs::OccupancyGrid &map_msg, Eigen::Affine3d &pose) {
+        Eigen::Vector4d origin = Eigen::Vector4d(map_msg.info.origin.position.x, map_msg.info.origin.position.y, map_msg.info.origin.position.z, 1);
+        Eigen::Vector4d new_origin = pose * origin;
+        map_msg.info.origin.position.x = new_origin(0);
+        map_msg.info.origin.position.y = new_origin(1);
+        map_msg.info.origin.position.z = new_origin(2);
+        Eigen::Quaterniond q(pose.rotation());
+        map_msg.info.origin.orientation.x = q.x();
+        map_msg.info.origin.orientation.y = q.y();
+        map_msg.info.origin.orientation.z = q.z();
+        map_msg.info.origin.orientation.w = q.w();
+    }
+
     void pubGraphMap(const std_msgs::Bool::ConstPtr msg) {
         ROS_INFO("Publishing graph map message");
         ndt_map::NDTVectorMapMsg vector_maps;
@@ -609,6 +624,25 @@ class GraphMapFuserNode {
         graph_map_custom_msgs::GraphMapMsg graphmapmsg;
         perception_oru::graph_map::graphMapToMsg(*(fuser_->GetGraph()),
                                                  graphmapmsg, map_link_id);
+
+        auto nodes = fuser_->GetGraph()->GetMapNodes();
+        auto size = nodes.size();
+        auto latest_node = nodes[size - 1];
+        auto latest_map = latest_node->GetMap();
+        Eigen::Affine3d latest_pose = latest_node->GetPose();
+        NDTMapType* node_ptr = dynamic_cast<NDTMapType*>(latest_map.get());
+        perception_oru::NDTMap* map_ptr = node_ptr->GetNDTMap();
+        nav_msgs::OccupancyGrid latest_occupancy_grid_submap;
+        perception_oru::toOccupancyGrid(map_ptr, latest_occupancy_grid_submap,
+                                        0.05, fuser_base_link_id);
+        // Transform the origin of the occupancy grid map
+        ROS_INFO("The positions of the occupancy grid map are: %f %f %f",
+                 latest_pose.translation().x(), latest_pose.translation().y(),
+                 latest_pose.translation().z());
+        transformOccupancyGridMapMsgOrigin(latest_occupancy_grid_submap, latest_pose);
+        latest_occupancy_grid_submap.header.frame_id = world_link_id;
+        latest_occupancy_grid_submap.header.stamp = ros::Time::now();
+        occupancy_grid_map_publisher_.publish(latest_occupancy_grid_submap);
 
         assert(times.size() == graphmapmsg.nodes.size());
         int count = 0;

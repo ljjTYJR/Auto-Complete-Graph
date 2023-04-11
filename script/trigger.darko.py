@@ -11,10 +11,11 @@ def send_msgs():
     pub = rospy.Publisher('/clicked_point', PointStamped, queue_size=10)
     points = [
         # prior/sensor; prior/sensor
-        Point(x = -27.874, y = -7.901, z = 0.0),
-        Point(x = -10.143, y = -3.593, z = 0.0),
-        Point(x = -27.094, y = 7.010, z = 0.0),
-        Point(x = -9.777, y = 1.790, z = 0)
+        # Point(x = 36.001, y = -3.39, z = 0.0),
+        Point(x = 2.379, y = 11.766, z = 0.0),
+        Point(x = -19.834, y = 12.832, z = 0.0),
+        Point(x = 8.782, y = 10.285, z = 0.0),
+        Point(x = -21.151, y = 6.262, z = 0)
     ]
     for n in range(4):
         time.sleep(0.5)
