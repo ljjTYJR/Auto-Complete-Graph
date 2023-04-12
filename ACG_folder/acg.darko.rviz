@@ -7,9 +7,8 @@ Panels:
         - /Global Options1
         - /Status1
         - /TF1/Frames1
-        - /Map1
         - /PointCloud21/Autocompute Value Bounds1
-        - /NDTVectorMap1
+        - /GridMap1
       Splitter Ratio: 0.4533030092716217
     Tree Height: 797
   - Class: rviz/Selection
@@ -97,10 +96,6 @@ Visualization Manager:
       Frame Timeout: 10
       Frames:
         All Enabled: false
-        fuser_base_link:
-          Value: true
-        mcl_tf:
-          Value: true
         robot_arm_link0:
           Value: false
         robot_arm_link1:
@@ -190,10 +185,6 @@ Visualization Manager:
         world:
           robot_map:
             robot_odom:
-              fuser_base_link:
-                {}
-              mcl_tf:
-                {}
               robot_base_footprint:
                 robot_base_link:
                   robot_back_left_wheel_link:
@@ -212,12 +203,12 @@ Visualization Manager:
       Class: rviz/Map
       Color Scheme: map
       Draw Behind: true
-      Enabled: true
+      Enabled: false
       Name: Map
       Topic: /graph_node/latest_occupancy_grid_map
       Unreliable: false
       Use Timestamp: false
-      Value: true
+      Value: false
     - Alpha: 1
       Arrow Length: 0.30000001192092896
       Axes Length: 0.30000001192092896
@@ -295,7 +286,7 @@ Visualization Manager:
       Marker Topic: /acg_node_localization/prior_marker
       Name: prior_marker
       Namespaces:
-        acg: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -303,7 +294,7 @@ Visualization Manager:
       Marker Topic: /acg_node_localization/corner_ndt_marker
       Name: corner_ndt_marker
       Namespaces:
-        acg: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -311,7 +302,7 @@ Visualization Manager:
       Marker Topic: /acg_node_localization/gaussian_that_gave_corners
       Name: g_that_gave_corner
       Namespaces:
-        acg: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -319,7 +310,7 @@ Visualization Manager:
       Marker Topic: /acg_node_localization/ndt_nodes_marker
       Name: ndt_nodes
       Namespaces:
-        acg: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -327,7 +318,7 @@ Visualization Manager:
       Marker Topic: /acg_node_localization/localization_pose_markers
       Name: loc_pose
       Namespaces:
-        acg: true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 0.699999988079071
@@ -336,7 +327,7 @@ Visualization Manager:
       Draw Behind: false
       Enabled: false
       Name: Map
-      Topic: /acg_node_localization/lastgraphmap_acg2_occ
+      Topic: /acg_node_localization/occupancy_grid_acg_global
       Unreliable: false
       Use Timestamp: false
       Value: false
@@ -365,7 +356,7 @@ Visualization Manager:
       Marker Topic: /acg_node_localization/prior_nodes_marker
       Name: prior_nodes
       Namespaces:
-        acg: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -411,6 +402,27 @@ Visualization Manager:
       Topic: /graph_node/graph_map_ndt_map
       Unreliable: false
       Value: false
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Class: grid_map_rviz_plugin/GridMap
+      Color: 200; 200; 200
+      Color Layer: elevation
+      Color Transformer: GridMapLayer
+      Enabled: true
+      Height Layer: elevation
+      Height Transformer: GridMapLayer
+      History Length: 1
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Max Intensity: 10
+      Min Color: 0; 0; 0
+      Min Intensity: 0
+      Name: GridMap
+      Show Grid Lines: true
+      Topic: /acg_node_localization/prior_map_grid_map
+      Unreliable: false
+      Use Rainbow: true
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 221; 221; 221
@@ -448,11 +460,11 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 7.732123374938965
+      Scale: 49.28893280029297
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
-      X: 13.306635856628418
-      Y: 3.86423397064209
+      X: -19.754743576049805
+      Y: 8.193264961242676
     Saved:
       - Class: rviz/Orbit
         Distance: 59.950599670410156

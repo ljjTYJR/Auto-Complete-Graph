@@ -2,6 +2,8 @@
 <launch>
 
 
+<!-- Add the launch prefix: gdb server for easy debugging -->
+<!-- <node pkg="auto_complete_graph" type="acg_node_localization" launch-prefix="gdbserver localhost:2000" name="acg_node_localization" output="screen"> -->
 <node pkg="auto_complete_graph" type="acg_node_localization" name="acg_node_localization" output="screen" >
 
 	<param name="pause_for_testing" value="true" />

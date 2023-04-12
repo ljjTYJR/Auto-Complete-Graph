@@ -138,78 +138,51 @@ inline nav_msgs::OccupancyGrid::Ptr ACGNDTtoOcc(
  * acg.getRobotNodes().size()
  */
 template <typename Prior, typename VertexPrior, typename EdgePrior>
-inline void ACGtoOccupancyGrid(
+inline bool ACGtoOccupancyGrid(
     const AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg,
     nav_msgs::OccupancyGrid::Ptr& occ_out,
     int start = 0,
     int end = -1) {
-    if (end < start && end != -1)
-        || (start >= acg.getRobotNodes().size()) {
-            throw std::runtime_error(
-                "End pointer is before the start. Can draw zones backward in "
-                "ACG_CONVERSION.hpp");
-        }
-
+    if ((end < start && end != -1) || (start >= acg.getRobotNodes().size())) {
+            throw std::runtime_error("End pointer is before the start. Can draw zones backward in ACG_CONVERSION.hpp");
+    }
     //************* TODO : shorten this code !
     // Get max size of prior
-    grid_map::GridMap map;
     auto edges = acg.getPrior()->getEdges();
+    ROS_INFO("The number of edges is %d", edges.size());
 
-    double max_x, min_x, max_y, min_y;
-    bool flag_init = false;
-    auto it = edges.begin();
-    for (it; it != edges.end(); ++it) {
-        for (auto ite2 = (*it)->vertices().begin();
-             ite2 != (*it)->vertices().end(); ++ite2) {
-            geometry_msgs::Point p;
-            g2o::VertexSE2ACG* ptr = dynamic_cast<g2o::VertexSE2ACG*>((*ite2));
-            auto vertex = ptr->estimate().toVector();
-            if (flag_init == false) {
-                flag_init = true;
-                max_x = vertex(0);
-                max_y = vertex(1);
-                min_x = vertex(0);
-                min_y = vertex(1);
-            } else {
-                if (max_x < vertex(0)) {
-                    max_x = vertex(0);
-                }
-                if (max_y < vertex(1)) {
-                    max_y = vertex(1);
-                }
-                if (min_x > vertex(0)) {
-                    min_x = vertex(0);
-                }
-                if (min_y > vertex(1)) {
-                    min_y = vertex(1);
-                }
-            }
+    double min_x = std::numeric_limits<double>::infinity();
+    double min_y = std::numeric_limits<double>::infinity();
+    double max_x = -std::numeric_limits<double>::infinity();
+    double max_y = -std::numeric_limits<double>::infinity();
+    for (auto it = edges.begin(); it != edges.end(); ++it) {
+        if ((*it)->vertices().size() != 2) {
+            ROS_INFO("The edge is not connected to two vertices. It is not a line. It is a %d", (*it)->vertices().size());
+            return false;
         }
+        auto v1 = dynamic_cast<g2o::VertexXYPrior*>((*it)->vertices()[0]);
+        auto v2 = dynamic_cast<g2o::VertexXYPrior*>((*it)->vertices()[1]);
+        if (v1 == NULL || v2 == NULL) {
+            ROS_INFO("The vertices in the edge are null");
+            return false;
+        }
+        auto v1_x = v1->estimate()[0];
+        auto v1_y = v1->estimate()[1];
+        auto v2_x = v2->estimate()[0];
+        auto v2_y = v2->estimate()[1];
+        min_x = std::min(std::min(min_x, v1_x), v2_x);
+        min_y = std::min(std::min(min_y, v1_y), v2_y);
+        max_x = std::max(std::max(max_x, v1_x), v2_x);
+        max_y = std::max(std::max(max_y, v1_y), v2_y);
     }
-
-    max_x = std::abs(max_x);
-    max_y = std::abs(max_y);
-    min_x = std::abs(min_x);
-    min_y = std::abs(min_y);
-
     double size_x, size_y;
-    if (max_x > min_x) {
-        size_x = max_x + 10;
-    } else {
-        size_x = min_x + 10;
-    }
-    if (max_y > min_y) {
-        size_y = max_y + 10;
-    } else {
-        size_y = min_y + 10;
-    }
+    size_x = std::max(std::abs(max_x), std::abs(min_x)) + 10;
+    size_y = std::max(std::abs(max_y), std::abs(min_y)) + 10;
 
     /***********************************/
-
-    map.setFrameId("/world");
-    map.setGeometry(grid_map::Length(4 * size_x, 4 * size_y), 0.1,
-                    grid_map::Position(0.0, 0.0));
-
+    grid_map::GridMap map;
+    map.setFrameId("/robot_odom");
+    map.setGeometry(grid_map::Length(4 * size_x, 4 * size_y), 0.1, grid_map::Position(0.0, 0.0));
     map.add("prior");
     map.add("ndt");
     map.add("all");
@@ -217,20 +190,15 @@ inline void ACGtoOccupancyGrid(
     map["all"].setZero();
 
     ACGPriortoGridMap<Prior, VertexPrior, EdgePrior>(acg, map, 0.1);
-
     nav_msgs::OccupancyGrid* prior_occ = new nav_msgs::OccupancyGrid();
     nav_msgs::OccupancyGrid::ConstPtr ptr_prior_occ(prior_occ);
-    grid_map::GridMapRosConverter::toOccupancyGrid(map, "prior", 0, 1.,
-                                                   *prior_occ);
-
+    grid_map::GridMapRosConverter::toOccupancyGrid(map, "prior", 0, 1., *prior_occ);
     std::vector<nav_msgs::OccupancyGrid::ConstPtr> grids;
     grids.push_back(ptr_prior_occ);
 
     if (acg.getRobotNodes().size() != 0) {
-        std::vector<g2o::VertexSE2RobotPose*>::const_iterator it =
-            acg.getRobotNodes().begin() + start;
-        std::vector<g2o::VertexSE2RobotPose*>::const_iterator it_end =
-            acg.getRobotNodes().end();
+        std::vector<g2o::VertexSE2RobotPose*>::const_iterator it = acg.getRobotNodes().begin() + start;
+        std::vector<g2o::VertexSE2RobotPose*>::const_iterator it_end = acg.getRobotNodes().end();
 
         if (end != -1) {
             it_end = acg.getRobotNodes().begin() + end;
@@ -238,12 +206,13 @@ inline void ACGtoOccupancyGrid(
 
         ACGNdtNodetoVecGrids(acg, it, it_end, grids);
     }
-
     if (grids.size() > 0) {
         occ_out = occupancy_grid_utils::combineGrids(grids);
-        occ_out->header.frame_id = "/world";
+        occ_out->header.frame_id = "/robot_odom";
         occ_out->header.stamp = ros::Time::now();
+        return true;
     }
+    return false;
 }
 
 /**
@@ -310,7 +279,6 @@ inline void ACGPriortoGridMap(
     throw std::runtime_error("DO NOT USE TEMPLATE of prior to grid map");
 }
 
-template <>
 inline void ACGPriortoGridMap(
     const AASS::acg::AutoCompleteGraphBase<AASS::acg::AutoCompleteGraphPriorSE2,
                                            g2o::VertexSE2RobotPose,
@@ -322,12 +290,10 @@ inline void ACGPriortoGridMap(
     gridMap.add("prior");
     gridMap["prior"].setZero();
 
-    auto it = edges.begin();
-    for (it; it != edges.end(); ++it) {
+    for (auto it = edges.begin(); it != edges.end(); ++it) {
+        // Retrieve the points connected by the edge
         std::vector<Eigen::Vector2d> points;
-
-        for (auto ite2 = (*it)->vertices().begin();
-             ite2 != (*it)->vertices().end(); ++ite2) {
+        for (auto ite2 = (*it)->vertices().begin(); ite2 != (*it)->vertices().end(); ++ite2) {
             geometry_msgs::Point p;
             g2o::VertexSE2ACG* ptr = dynamic_cast<g2o::VertexSE2ACG*>((*ite2));
             auto vertex = ptr->estimate().toVector();
@@ -354,13 +320,14 @@ inline void ACGPriortoGridMap(
                                            g2o::EdgeXYPriorACG>& acg,
     grid_map::GridMap& gridMap,
     double resolution) {
+    ROS_INFO("Converting Prior maps!");
     auto edges = acg.getPrior()->getEdges();
+    ROS_INFO("Number of edges : %d", edges.size());
 
     gridMap.add("prior");
     gridMap["prior"].setZero();
 
-    auto it = edges.begin();
-    for (it; it != edges.end(); ++it) {
+    for (auto it = edges.begin(); it != edges.end(); ++it) {
         std::vector<Eigen::Vector2d> points;
 
         for (auto ite2 = (*it)->vertices().begin();
@@ -838,6 +805,25 @@ inline void ACGToACGMapsOMMsg(
     grid_map::GridMapRosConverter converter;
     grid_map_msgs::GridMap gridmapmsg;
     converter.toMessage(gridMap, mapmsg.prior);
+}
+
+template <typename Prior, typename VertexPrior, typename EdgePrior>
+inline void convertACGPriorMapToGridMapMsg(
+    const AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg,
+    grid_map_msgs::GridMap& gridmapmsg,
+    const std::string& frame_id = "/robot_odom",
+    double resolution = 0.1) {
+    grid_map::GridMap gridMap;
+    gridMap.setFrameId(frame_id);
+    double size_x, size_y;
+    getPriorSizes(acg, size_x, size_y);
+    gridMap.setGeometry(grid_map::Length(4 * size_x, 4 * size_y), resolution,
+                        grid_map::Position(0.0, 0.0));
+    gridMap.add("prior");
+    gridMap["prior"].setZero();
+    ACGPriortoGridMap(acg, gridMap, resolution);
+    grid_map::GridMapRosConverter converter;
+    converter.toMessage(gridMap, gridmapmsg);
 }
 
 }  // namespace acg

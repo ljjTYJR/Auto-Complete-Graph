@@ -93,6 +93,12 @@ class EdgeInterface {
  * when update the NDT-graph for we used the registration. I should remove it
  * but for now I'm leaving it only not to break everything.
  */
+/**
+ * The template:
+ * Prior includes {AutoCompleteGraphPriorXY}
+ * VertexPrior includes {g2o::VertexXYPrior}
+ * EdgePrior includes {g2o::EdgeXYPriorACG}
+*/
 template <typename Prior, typename VertexPrior, typename EdgePrior>
 class AutoCompleteGraphBase {
    protected:

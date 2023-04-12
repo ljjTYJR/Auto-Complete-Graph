@@ -33,12 +33,12 @@ ros::Publisher last_ndtmap_full;
 ros::Publisher occupancy_grid;
 ros::Publisher occ_send;
 ros::Publisher prior_cloud, prior_ndt;
-ros::Publisher acg_gdim;
+ros::Publisher acg_gdim;;
 
 ros::Publisher last_grid_map;
 ros::Publisher last_ndtmap;
 ros::Publisher last_occ_map;
-ros::Publisher last_occ_map2;
+ros::Publisher prior_map_grid_map_pub;
 
 ros::Time timef;
 
@@ -568,7 +568,7 @@ inline void printImages(AASS::acg::AutoCompleteGraphLocalization* oacg) {
     grid_map::GridMapCvConverter::toImage<unsigned short, 1>(
         gridMap, "all", CV_16UC1, 0.0, 1, originalImageP);
     std::string file_outg =
-        "/home/malcolm/ACG_folder/ACG_RVIZ_SMALL/occupancygrid_full_";
+        "/home/ros/catkin_ws/src/darko/Auto-Complete-Graph/result_fig/full_";
     std::ostringstream convert;  // stream used for the conversion
     convert << oacg->getRobotNodes().size();
 
@@ -592,7 +592,7 @@ inline void printImages(AASS::acg::AutoCompleteGraphLocalization* oacg) {
     grid_map::GridMapCvConverter::toImage<unsigned short, 1>(
         gridMap_partial, "all", CV_16UC1, 0.0, 1, originalImageP_partial);
     std::string file_outg_partial =
-        "/home/malcolm/ACG_folder/ACG_RVIZ_SMALL/occupancygrid_full_partial_";
+        "/home/ros/catkin_ws/src/darko/Auto-Complete-Graph/result_fig/partial_";
     std::ostringstream convertg_partial;  // stream used for the conversion
     convertg_partial << oacg->getRobotNodes().size();
     file_outg_partial = file_outg_partial + convert.str();
@@ -646,58 +646,72 @@ void gotGraphandOptimize(
         visu.updateRviz(*oacg);
         ROS_DEBUG("RVIZ DONE");
     }
+        /* The commented code is used to optimize the graph */
     // Prepare the graph : marginalize + initializeOpti
-    std::pair<int, int> iterations;
-    ros::Time start_opti = ros::Time::now();
-    bool optiquest = true;
-    if (testing_pause) {
-        std::cout << "Optimize ?" << std::endl;
-        std::cin >> optiquest;
-    }
-    if (/*oacg->checkAbleToOptimize() &&*/ optiquest) {
-        oacg->setFirst();
-        oacg->prepare();
-        std::cout << "ITERATIO COUNT " << max_iteration << std::endl;
-        iterations = oacg->optimize(max_iteration);
-    } else {
-        oacg->testInfoNonNul("Just making sure");
-    }
-    ros::Time end_opti = ros::Time::now();
-    std::cout << "Start opti time " << start_opti.toSec() << " "
-              << end_opti.toSec() << std::endl;
-    std::cout << "Start opti time " << start_opti.toNSec() << " "
-              << end_opti.toNSec() << std::endl;
-    double opti = (end_opti - start_opti).toSec();
-    time_opti.push_back(opti);
+    // std::pair<int, int> iterations;
+    // ros::Time start_opti = ros::Time::now();
+    // bool optiquest = true;
+    // if (testing_pause) {
+    //     std::cout << "Optimize ?" << std::endl;
+    //     std::cin >> optiquest;
+    // }
+    // if (/*oacg->checkAbleToOptimize() &&*/ optiquest) {
+    //     oacg->setFirst();
+    //     oacg->prepare();
+    //     std::cout << "ITERATIO COUNT " << max_iteration << std::endl;
+    //     iterations = oacg->optimize(max_iteration);
+    // } else {
+    //     oacg->testInfoNonNul("Just making sure");
+    // }
+    // ros::Time end_opti = ros::Time::now();
+    // std::cout << "Start opti time " << start_opti.toSec() << " "
+    //         << end_opti.toSec() << std::endl;
+    // std::cout << "Start opti time " << start_opti.toNSec() << " "
+    //         << end_opti.toNSec() << std::endl;
+    // double opti = (end_opti - start_opti).toSec();
+    // time_opti.push_back(opti);
 
-    if (optimize_prior == true) {
-        ROS_DEBUG("Publishing the new prior ndt map");
-        publishACGOM(*oacg);
-    }
+    // if (optimize_prior == true) {
+    //     ROS_DEBUG("Publishing the new prior ndt map");
+    //     publishACGOM(*oacg);
+    // }
 
     ROS_DEBUG("RVIZ ");
     visu.updateRviz(*oacg);
     publishACGOM(*oacg);
     ROS_DEBUG("RVIZ DONE");
 
-    if (testing_pause) {
-        std::cout << "Result of optimization. Enter a number to continue"
-                  << std::endl;
-        int aaa;
-        std::cin >> aaa;
-    }
+    // if (testing_pause) {
+    //     std::cout << "Result of optimization. Enter a number to continue"
+    //               << std::endl;
+    //     int aaa;
+    //     std::cin >> aaa;
+    // }
 
-    if (export_iteration_count == true && optiquest) {
-        bool done =
-            exportIterationCOunt(*oacg, iterations, corner_extract_tt, opti);
-    }
+    // if (export_iteration_count == true && optiquest) {
+    //     bool done =
+    //         exportIterationCOunt(*oacg, iterations, corner_extract_tt, opti);
+    // }
 
-    timef = ros::Time::now();
-    all_node_times.push_back((timef - start).toSec());
+    // timef = ros::Time::now();
+    // all_node_times.push_back((timef - start).toSec());
 
-    if (optiquest && add_noise_odometry) {
-        exportErrorNoiseOdometry(*oacg);
+    // if (optiquest && add_noise_odometry) {
+    //     exportErrorNoiseOdometry(*oacg);
+    // }
+
+    // convert the acg to occupancy grid map
+    ROS_INFO("Publishing the occupancy grid map");
+    nav_msgs::OccupancyGrid* omap_tmpt = new nav_msgs::OccupancyGrid();
+    nav_msgs::OccupancyGrid::Ptr acg_occu_grid_msg_ptr(omap_tmpt);
+    bool get_acg_map = AASS::acg::ACGtoOccupancyGrid(*oacg, acg_occu_grid_msg_ptr);
+    if (get_acg_map) {
+        ROS_INFO("Publishing the occupancy grid map");
+        occupancy_grid.publish(*acg_occu_grid_msg_ptr);
     }
+    grid_map_msgs::GridMap prior_grid_map_msg;
+    AASS::acg::convertACGPriorMapToGridMapMsg(*oacg, prior_grid_map_msg);
+    prior_map_grid_map_pub.publish(prior_grid_map_msg);
 }
 
 void initAll(AASS::acg::AutoCompleteGraphLocalization& oacg,
@@ -934,10 +948,10 @@ int main(int argc, char** argv) {
     last_ndtmap = nh.advertise<ndt_map::NDTMapMsg>("lastgraphmap_acg", 10);
     last_occ_map =
         nh.advertise<nav_msgs::OccupancyGrid>("occ_lastgraphmap_acg", 10);
-    last_occ_map2 =
-        nh.advertise<nav_msgs::OccupancyGrid>("two_occ_lastgraphmap_acg", 10);
+    prior_map_grid_map_pub = nh.advertise<grid_map_msgs::GridMap>("prior_map_grid_map", 10);
 
     last_grid_map = nh.advertise<grid_map_msgs::GridMap>("last_grid_map", 10);
+    occupancy_grid = nh.advertise<nav_msgs::OccupancyGrid>("occupancy_grid_acg_global", 10);
 
     last_ndtmap_full =
         nh.advertise<nav_msgs::OccupancyGrid>("occ_grid_ndt", 10);

@@ -1333,8 +1333,12 @@ AASS::acg::AutoCompleteGraphLocalization::registerSubmaps(
             std::cout
                 << "THIS IS BAD COV GIVEN WAS NOT SPD, switching to default"
                 << std::endl;
-            cov << 0.1, 0, 0, 0, 0, 0, 0, 0.1, 0, 0, 0, 0, 0, 0, 0.1, 0, 0, 0,
-                0, 0, 0, 0.1, 0, 0, 0, 0, 0, 0, 0.1, 0, 0, 0, 0, 0, 0, 0.1;
+            cov <<  0.1,    0,      0,      0,      0,      0,
+                    0,      0.1,    0,      0,      0,      0,
+                    0,      0,      0.1,    0,      0,      0,
+                    0,      0,      0,      0.1,    0,      0,
+                    0,      0,      0,      0,      0.1,    0,
+                    0,      0,      0,      0,      0,      0.1;
         }
 
         int a;
