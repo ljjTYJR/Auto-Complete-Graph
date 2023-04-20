@@ -505,13 +505,13 @@ class GraphMapFuserNode {
             std::cout << "match laser: " << laser_topic << std::endl;
             laser_sub_ =
                 new message_filters::Subscriber<sensor_msgs::LaserScan>(
-                    nh_, laser_topic, 2);
+                    nh_, laser_topic, 20);
             if (useOdometry) {
                 std::cout << "USE ODOM" << std::endl;
                 std::cout << "use no gt mapping no tf: " << laser_topic
                           << " and odom " << odometry_topic << std::endl;
                 odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(
-                    nh_, odometry_topic, 10);
+                    nh_, odometry_topic, 20);
                 sync_lo_ = new message_filters::Synchronizer<LaserOdomSync>(
                     LaserOdomSync(SYNC_FRAMES), *laser_sub_, *odom_sub_);
                 sync_lo_->registerCallback(boost::bind(
@@ -1184,7 +1184,7 @@ class GraphMapFuserNode {
 
     // Callback
     void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg_in) {
-        ROS_DEBUG_STREAM("laser callback");
+        std::cout << "[Debug] laser callback" << std::endl;
         // 	exit(0);
         sensor_msgs::PointCloud2 cloud;
         pcl::PointCloud<pcl::PointXYZ> pcl_cloud_unfiltered, pcl_cloud;
@@ -1201,14 +1201,14 @@ class GraphMapFuserNode {
             }
         }
         T.setIdentity();
-        ROS_DEBUG_STREAM("node: laser call back, process frame");
+        std::cout << "[Debug] To process frame" << std::endl;
         this->processFrame(pcl_cloud, T, msg_in->header.stamp);
     }
 
     // Callback
     void laserOdomCallback(const sensor_msgs::LaserScan::ConstPtr& msg_in,
                            const nav_msgs::Odometry::ConstPtr& odo_in) {
-        ROS_DEBUG_STREAM("laser odom callback");
+        ROS_INFO_STREAM("node: laser odom call back");
         sensor_msgs::PointCloud2 cloud;
         pcl::PointCloud<pcl::PointXYZ> pcl_cloud, pcl_cloud_unfiltered;
         Eigen::Affine3d Tm;

@@ -26,7 +26,7 @@
 	<!--<param name="world_frame" value="/world" />-->
 	<param name="world_frame" value="robot_odom" />
 	<!--<param name="sensor_frame" value="/base_laser_link" />-->
-	<param name="sensor_frame" value="robot_front_laser_link" />
+	<param name="sensor_frame" value="lidar_top/os_sensor" />
 	<param name="map_frame" value="robot_odom" />
 	<!--<param name="map_frame" value="/world" />-->
 	<param name="covariance_to_find_links" value="false" />

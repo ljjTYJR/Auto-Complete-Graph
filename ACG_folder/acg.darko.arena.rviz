@@ -1,0 +1,1061 @@
+Panels:
+  - Class: rviz/Displays
+    Help Height: 74
+    Name: Displays
+    Property Tree Widget:
+      Expanded:
+        - /Global Options1
+        - /Status1
+        - /TF1
+        - /TF1/Frames1
+        - /TF1/Tree1
+        - /PointCloud21
+        - /PointCloud21/Autocompute Value Bounds1
+        - /LaserScan1
+        - /NDTVectorMap1
+      Splitter Ratio: 0.4533030092716217
+    Tree Height: 797
+  - Class: rviz/Selection
+    Name: Selection
+  - Class: rviz/Tool Properties
+    Expanded:
+      - /2D Pose Estimate1
+      - /2D Nav Goal1
+      - /Publish Point1
+    Name: Tool Properties
+    Splitter Ratio: 0.5886790156364441
+  - Class: rviz/Views
+    Expanded:
+      - /Current View1
+    Name: Views
+    Splitter Ratio: 0.5
+  - Class: rviz/Time
+    Experimental: false
+    Name: Time
+    SyncMode: 0
+    SyncSource: LaserScan
+Preferences:
+  PromptSaveOnExit: true
+Toolbars:
+  toolButtonStyle: 2
+Visualization Manager:
+  Class: ""
+  Displays:
+    - Alpha: 0.5
+      Cell Size: 10
+      Class: rviz/Grid
+      Color: 220; 220; 220
+      Enabled: true
+      Line Style:
+        Line Width: 0.029999999329447746
+        Value: Lines
+      Name: Grid -- 10 m
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 10
+      Reference Frame: world
+      Value: true
+    - Alpha: 0.25
+      Cell Size: 1
+      Class: rviz/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Line Style:
+        Line Width: 0.029999999329447746
+        Value: Lines
+      Name: Grid -- 1 m
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 500
+      Reference Frame: world
+      Value: true
+    - Alpha: 0.20000000298023224
+      Cell Size: 0.125
+      Class: rviz/Grid
+      Color: 160; 160; 164
+      Enabled: true
+      Line Style:
+        Line Width: 0.029999999329447746
+        Value: Lines
+      Name: Grid -- 10 cm
+      Normal Cell Count: 0
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Plane: XY
+      Plane Cell Count: 10000
+      Reference Frame: world
+      Value: true
+    - Class: rviz/TF
+      Enabled: true
+      Frame Timeout: 10
+      Frames:
+        All Enabled: false
+        fuser_base_link:
+          Value: true
+        goal1:
+          Value: false
+        goal2:
+          Value: false
+        goal3:
+          Value: false
+        goal4:
+          Value: false
+        goal5:
+          Value: false
+        goal6:
+          Value: false
+        goal7:
+          Value: false
+        latest:
+          Value: false
+        lidar_top/os_imu:
+          Value: false
+        lidar_top/os_lidar:
+          Value: true
+        lidar_top/os_sensor:
+          Value: false
+        mcl_tf:
+          Value: true
+        naos_robot_frame:
+          Value: false
+        pose_1:
+          Value: false
+        pose_10:
+          Value: false
+        pose_11:
+          Value: false
+        pose_12:
+          Value: false
+        pose_13:
+          Value: false
+        pose_14:
+          Value: false
+        pose_15:
+          Value: false
+        pose_16:
+          Value: false
+        pose_17:
+          Value: false
+        pose_18:
+          Value: false
+        pose_19:
+          Value: false
+        pose_2:
+          Value: false
+        pose_20:
+          Value: false
+        pose_21:
+          Value: false
+        pose_22:
+          Value: false
+        pose_23:
+          Value: false
+        pose_24:
+          Value: false
+        pose_25:
+          Value: false
+        pose_26:
+          Value: false
+        pose_27:
+          Value: false
+        pose_28:
+          Value: false
+        pose_29:
+          Value: false
+        pose_3:
+          Value: false
+        pose_30:
+          Value: false
+        pose_31:
+          Value: false
+        pose_32:
+          Value: false
+        pose_33:
+          Value: false
+        pose_34:
+          Value: false
+        pose_35:
+          Value: false
+        pose_36:
+          Value: false
+        pose_37:
+          Value: false
+        pose_38:
+          Value: false
+        pose_39:
+          Value: false
+        pose_4:
+          Value: false
+        pose_40:
+          Value: false
+        pose_41:
+          Value: false
+        pose_42:
+          Value: false
+        pose_43:
+          Value: false
+        pose_44:
+          Value: false
+        pose_45:
+          Value: false
+        pose_46:
+          Value: false
+        pose_47:
+          Value: false
+        pose_48:
+          Value: false
+        pose_49:
+          Value: false
+        pose_5:
+          Value: false
+        pose_50:
+          Value: false
+        pose_51:
+          Value: false
+        pose_52:
+          Value: false
+        pose_53:
+          Value: false
+        pose_54:
+          Value: false
+        pose_55:
+          Value: false
+        pose_56:
+          Value: false
+        pose_57:
+          Value: true
+        pose_58:
+          Value: true
+        pose_59:
+          Value: true
+        pose_6:
+          Value: false
+        pose_60:
+          Value: true
+        pose_61:
+          Value: true
+        pose_62:
+          Value: true
+        pose_63:
+          Value: true
+        pose_64:
+          Value: true
+        pose_65:
+          Value: true
+        pose_66:
+          Value: true
+        pose_67:
+          Value: true
+        pose_68:
+          Value: true
+        pose_69:
+          Value: true
+        pose_7:
+          Value: false
+        pose_70:
+          Value: true
+        pose_71:
+          Value: true
+        pose_72:
+          Value: true
+        pose_73:
+          Value: true
+        pose_74:
+          Value: true
+        pose_75:
+          Value: true
+        pose_76:
+          Value: true
+        pose_77:
+          Value: true
+        pose_78:
+          Value: true
+        pose_79:
+          Value: true
+        pose_8:
+          Value: false
+        pose_80:
+          Value: true
+        pose_81:
+          Value: true
+        pose_82:
+          Value: true
+        pose_83:
+          Value: true
+        pose_84:
+          Value: true
+        pose_85:
+          Value: true
+        pose_86:
+          Value: true
+        pose_87:
+          Value: true
+        pose_88:
+          Value: true
+        pose_89:
+          Value: true
+        pose_9:
+          Value: false
+        pose_90:
+          Value: true
+        pose_91:
+          Value: true
+        pose_92:
+          Value: true
+        pose_93:
+          Value: true
+        qualisys_frame:
+          Value: false
+        robot_arm_link0:
+          Value: false
+        robot_arm_link1:
+          Value: false
+        robot_arm_link2:
+          Value: false
+        robot_arm_link3:
+          Value: false
+        robot_arm_link4:
+          Value: false
+        robot_arm_link5:
+          Value: false
+        robot_arm_link6:
+          Value: false
+        robot_arm_link7:
+          Value: false
+        robot_arm_link8:
+          Value: false
+        robot_back_left_wheel_link:
+          Value: false
+        robot_back_right_wheel_link:
+          Value: false
+        robot_base_chapa:
+          Value: false
+        robot_base_docking_contact:
+          Value: false
+        robot_base_footprint:
+          Value: false
+        robot_base_link:
+          Value: true
+        robot_base_logo_front:
+          Value: false
+        robot_base_logo_left:
+          Value: false
+        robot_base_logo_rear:
+          Value: false
+        robot_base_logo_right:
+          Value: false
+        robot_fisheye_front_link:
+          Value: false
+        robot_fisheye_front_optical_frame:
+          Value: false
+        robot_fisheye_rear_link:
+          Value: false
+        robot_fisheye_rear_optical_frame:
+          Value: false
+        robot_front_laser_base_link:
+          Value: false
+        robot_front_laser_link:
+          Value: false
+        robot_front_laser_support_link:
+          Value: false
+        robot_front_left_wheel_link:
+          Value: false
+        robot_front_rgbd_camera_depth_frame:
+          Value: false
+        robot_front_rgbd_camera_depth_optical_frame:
+          Value: false
+        robot_front_rgbd_camera_link:
+          Value: false
+        robot_front_rgbd_camera_rgb_frame:
+          Value: false
+        robot_front_rgbd_camera_rgb_optical_frame:
+          Value: false
+        robot_front_right_wheel_link:
+          Value: false
+        robot_gripper_base_link:
+          Value: false
+        robot_gripper_finger1_base_link:
+          Value: false
+        robot_gripper_finger1_link:
+          Value: false
+        robot_gripper_finger1_outlet_link:
+          Value: false
+        robot_gripper_finger1_tip_link:
+          Value: false
+        robot_gripper_finger2_base_link:
+          Value: false
+        robot_gripper_finger2_link:
+          Value: false
+        robot_gripper_finger2_outlet_link:
+          Value: false
+        robot_gripper_finger2_tip_link:
+          Value: false
+        robot_gripper_finger3_base_link:
+          Value: false
+        robot_gripper_finger3_link:
+          Value: false
+        robot_gripper_finger3_outlet_link:
+          Value: false
+        robot_gripper_finger3_tip_link:
+          Value: false
+        robot_imu_link:
+          Value: false
+        robot_k4a_bottom_camera_base:
+          Value: false
+        robot_k4a_bottom_camera_body:
+          Value: false
+        robot_k4a_bottom_camera_visor:
+          Value: false
+        robot_k4a_bottom_gravity_link:
+          Value: false
+        robot_k4a_bottom_imu_filtered_link:
+          Value: false
+        robot_k4a_bottom_imu_link:
+          Value: false
+        robot_k4a_bottom_link:
+          Value: false
+        robot_k4a_pole_link:
+          Value: false
+        robot_k4a_pole_sup_link:
+          Value: false
+        robot_k4a_top_camera_base:
+          Value: false
+        robot_k4a_top_camera_body:
+          Value: false
+        robot_k4a_top_camera_visor:
+          Value: false
+        robot_k4a_top_gravity_link:
+          Value: false
+        robot_k4a_top_imu_filtered_link:
+          Value: false
+        robot_k4a_top_imu_link:
+          Value: false
+        robot_k4a_top_link:
+          Value: false
+        robot_lidar_pole_link:
+          Value: false
+        robot_lidar_pole_sup_link:
+          Value: false
+        robot_lidar_top_base_link:
+          Value: false
+        robot_lidar_top_link:
+          Value: false
+        robot_map:
+          Value: false
+        robot_odom:
+          Value: true
+        robot_pantilt_base_link:
+          Value: false
+        robot_pantilt_pan_link:
+          Value: false
+        robot_pantilt_tilt_link:
+          Value: false
+        robot_rear_laser_base_link:
+          Value: false
+        robot_rear_laser_link:
+          Value: false
+        robot_rear_laser_support_link:
+          Value: false
+        world:
+          Value: true
+      Marker Scale: 3
+      Name: TF
+      Show Arrows: false
+      Show Axes: true
+      Show Names: true
+      Tree:
+        world:
+          latest:
+            {}
+          pose_1:
+            {}
+          pose_10:
+            {}
+          pose_11:
+            {}
+          pose_12:
+            {}
+          pose_13:
+            {}
+          pose_14:
+            {}
+          pose_15:
+            {}
+          pose_16:
+            {}
+          pose_17:
+            {}
+          pose_18:
+            {}
+          pose_19:
+            {}
+          pose_2:
+            {}
+          pose_20:
+            {}
+          pose_21:
+            {}
+          pose_22:
+            {}
+          pose_23:
+            {}
+          pose_24:
+            {}
+          pose_25:
+            {}
+          pose_26:
+            {}
+          pose_27:
+            {}
+          pose_28:
+            {}
+          pose_29:
+            {}
+          pose_3:
+            {}
+          pose_30:
+            {}
+          pose_31:
+            {}
+          pose_32:
+            {}
+          pose_33:
+            {}
+          pose_34:
+            {}
+          pose_35:
+            {}
+          pose_36:
+            {}
+          pose_37:
+            {}
+          pose_38:
+            {}
+          pose_39:
+            {}
+          pose_4:
+            {}
+          pose_40:
+            {}
+          pose_41:
+            {}
+          pose_42:
+            {}
+          pose_43:
+            {}
+          pose_44:
+            {}
+          pose_45:
+            {}
+          pose_46:
+            {}
+          pose_47:
+            {}
+          pose_48:
+            {}
+          pose_49:
+            {}
+          pose_5:
+            {}
+          pose_50:
+            {}
+          pose_51:
+            {}
+          pose_52:
+            {}
+          pose_53:
+            {}
+          pose_54:
+            {}
+          pose_55:
+            {}
+          pose_56:
+            {}
+          pose_57:
+            {}
+          pose_58:
+            {}
+          pose_59:
+            {}
+          pose_6:
+            {}
+          pose_60:
+            {}
+          pose_61:
+            {}
+          pose_62:
+            {}
+          pose_63:
+            {}
+          pose_64:
+            {}
+          pose_65:
+            {}
+          pose_66:
+            {}
+          pose_67:
+            {}
+          pose_68:
+            {}
+          pose_69:
+            {}
+          pose_7:
+            {}
+          pose_70:
+            {}
+          pose_71:
+            {}
+          pose_72:
+            {}
+          pose_73:
+            {}
+          pose_74:
+            {}
+          pose_75:
+            {}
+          pose_76:
+            {}
+          pose_77:
+            {}
+          pose_78:
+            {}
+          pose_79:
+            {}
+          pose_8:
+            {}
+          pose_80:
+            {}
+          pose_81:
+            {}
+          pose_82:
+            {}
+          pose_83:
+            {}
+          pose_84:
+            {}
+          pose_85:
+            {}
+          pose_86:
+            {}
+          pose_87:
+            {}
+          pose_88:
+            {}
+          pose_89:
+            {}
+          pose_9:
+            {}
+          pose_90:
+            {}
+          pose_91:
+            {}
+          pose_92:
+            {}
+          pose_93:
+            {}
+          robot_odom:
+            fuser_base_link:
+              {}
+            mcl_tf:
+              {}
+            robot_base_footprint:
+              naos_robot_frame:
+                {}
+              robot_base_link:
+                robot_arm_link0:
+                  robot_arm_link1:
+                    robot_arm_link2:
+                      robot_arm_link3:
+                        robot_arm_link4:
+                          robot_arm_link5:
+                            robot_arm_link6:
+                              robot_arm_link7:
+                                robot_arm_link8:
+                                  robot_gripper_base_link:
+                                    robot_gripper_finger1_base_link:
+                                      robot_gripper_finger1_link:
+                                        robot_gripper_finger1_tip_link:
+                                          {}
+                                      robot_gripper_finger1_outlet_link:
+                                        {}
+                                    robot_gripper_finger2_base_link:
+                                      robot_gripper_finger2_link:
+                                        robot_gripper_finger2_tip_link:
+                                          {}
+                                      robot_gripper_finger2_outlet_link:
+                                        {}
+                                    robot_gripper_finger3_base_link:
+                                      robot_gripper_finger3_link:
+                                        robot_gripper_finger3_tip_link:
+                                          {}
+                                      robot_gripper_finger3_outlet_link:
+                                        {}
+                robot_back_left_wheel_link:
+                  {}
+                robot_back_right_wheel_link:
+                  {}
+                robot_base_chapa:
+                  {}
+                robot_base_docking_contact:
+                  {}
+                robot_base_logo_front:
+                  {}
+                robot_base_logo_left:
+                  {}
+                robot_base_logo_rear:
+                  {}
+                robot_base_logo_right:
+                  {}
+                robot_front_laser_base_link:
+                  robot_front_laser_link:
+                    {}
+                robot_front_laser_support_link:
+                  {}
+                robot_front_left_wheel_link:
+                  {}
+                robot_front_rgbd_camera_link:
+                  robot_front_rgbd_camera_depth_frame:
+                    robot_front_rgbd_camera_depth_optical_frame:
+                      {}
+                  robot_front_rgbd_camera_rgb_frame:
+                    robot_front_rgbd_camera_rgb_optical_frame:
+                      {}
+                robot_front_right_wheel_link:
+                  {}
+                robot_imu_link:
+                  {}
+                robot_k4a_pole_link:
+                  robot_k4a_pole_sup_link:
+                    robot_k4a_bottom_link:
+                      robot_k4a_bottom_camera_base:
+                        {}
+                      robot_k4a_bottom_camera_body:
+                        {}
+                      robot_k4a_bottom_camera_visor:
+                        {}
+                    robot_pantilt_base_link:
+                      robot_pantilt_pan_link:
+                        robot_pantilt_tilt_link:
+                          robot_k4a_top_link:
+                            robot_k4a_top_camera_base:
+                              {}
+                            robot_k4a_top_camera_body:
+                              {}
+                            robot_k4a_top_camera_visor:
+                              {}
+                robot_lidar_pole_link:
+                  robot_lidar_pole_sup_link:
+                    robot_fisheye_front_link:
+                      robot_fisheye_front_optical_frame:
+                        {}
+                    robot_fisheye_rear_link:
+                      robot_fisheye_rear_optical_frame:
+                        {}
+                    robot_lidar_top_base_link:
+                      robot_lidar_top_link:
+                        lidar_top/os_sensor:
+                          lidar_top/os_imu:
+                            {}
+                          lidar_top/os_lidar:
+                            {}
+                robot_rear_laser_base_link:
+                  robot_rear_laser_link:
+                    {}
+                robot_rear_laser_support_link:
+                  {}
+      Update Interval: 0
+      Value: true
+    - Alpha: 0.5
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: true
+      Enabled: false
+      Name: Map
+      Topic: /graph_node/latest_occupancy_grid_map
+      Unreliable: false
+      Use Timestamp: false
+      Value: false
+    - Alpha: 1
+      Arrow Length: 0.30000001192092896
+      Axes Length: 0.30000001192092896
+      Axes Radius: 0.009999999776482582
+      Class: rviz/PoseArray
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.07000000029802322
+      Head Radius: 0.029999999329447746
+      Name: PoseArray
+      Shaft Length: 0.23000000417232513
+      Shaft Radius: 0.009999999776482582
+      Shape: Arrow (Flat)
+      Topic: /graph_node/particles
+      Unreliable: false
+      Value: true
+    - Alpha: 0.25
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 0.584151029586792
+        Min Value: -2.0386199951171875
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 85; 0; 255
+      Color Transformer: FlatColor
+      Decay Time: 5
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 0
+      Selectable: true
+      Size (Pixels): 2
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic: /graph_node/mcl_point_cloud
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Alpha: 1
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/LaserScan
+      Color: 255; 0; 0
+      Color Transformer: FlatColor
+      Decay Time: 1000
+      Enabled: true
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: LaserScan
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 2
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic: /robot/front_laser/scan2
+      Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /acg_node_localization/prior_marker
+      Name: prior_marker
+      Namespaces:
+        acg: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /acg_node_localization/corner_ndt_marker
+      Name: corner_ndt_marker
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /acg_node_localization/gaussian_that_gave_corners
+      Name: g_that_gave_corner
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /acg_node_localization/ndt_nodes_marker
+      Name: ndt_nodes
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /acg_node_localization/localization_pose_markers
+      Name: loc_pose
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: true
+    - Alpha: 0.699999988079071
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: false
+      Name: Map
+      Topic: /acg_node_localization/occupancy_grid_acg_global
+      Unreliable: false
+      Use Timestamp: false
+      Value: false
+    - Alpha: 0.699999988079071
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: false
+      Name: Map
+      Topic: /acg_node_localization/lastgraphmap_acg_occ
+      Unreliable: false
+      Use Timestamp: false
+      Value: false
+    - Alpha: 0.699999988079071
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: false
+      Name: Map
+      Topic: /acg_node_localization/two_occ_lastgraphmap_acg
+      Unreliable: false
+      Use Timestamp: false
+      Value: false
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /acg_node_localization/prior_nodes_marker
+      Name: prior_nodes
+      Namespaces:
+        acg: true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /acg_node_localization/prior_observations_markers
+      Name: prior_obs
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Class: rviz/Marker
+      Enabled: false
+      Marker Topic: /acg_node_localization/angles_prior
+      Name: angles_prior
+      Namespaces:
+        {}
+      Queue Size: 100
+      Value: false
+    - Alpha: 1
+      Class: ndt_rviz/NDTVectorMap
+      Color: 204; 51; 204
+      Enabled: true
+      History Length: 1
+      Name: NDTVectorMap
+      Topic: /graph_node/graph_map_vector
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Class: auto_complete_graph_rviz_visualisation/ACGMapsDisplay
+      Color: 204; 51; 204
+      Enabled: true
+      History Length: 1
+      Name: ACGMapsDisplay
+      Topic: ""
+      Unreliable: false
+      Value: true
+    - Alpha: 1
+      Class: ndt_rviz/NDT
+      Color: 0; 255; 127
+      Enabled: false
+      History Length: 1
+      Name: NDT
+      Topic: /graph_node/graph_map_ndt_map
+      Unreliable: false
+      Value: false
+  Enabled: true
+  Global Options:
+    Background Color: 221; 221; 221
+    Default Light: true
+    Fixed Frame: robot_odom
+    Frame Rate: 30
+  Name: root
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: true
+    - Class: rviz/MoveCamera
+    - Class: rviz/Select
+    - Class: rviz/FocusCamera
+    - Class: rviz/Measure
+    - Class: rviz/SetInitialPose
+      Theta std deviation: 0.2617993950843811
+      Topic: /initialpose
+      X std deviation: 0.5
+      Y std deviation: 0.5
+    - Class: rviz/SetGoal
+      Topic: /move_base_simple/goal
+    - Class: rviz/PublishPoint
+      Single click: true
+      Topic: /clicked_point
+  Value: true
+  Views:
+    Current:
+      Angle: 3.0750083923339844
+      Class: rviz/TopDownOrtho
+      Enable Stereo Rendering:
+        Stereo Eye Separation: 0.05999999865889549
+        Stereo Focal Distance: 1
+        Swap Stereo Eyes: false
+        Value: false
+      Invert Z Axis: false
+      Name: Current View
+      Near Clip Distance: 0.009999999776482582
+      Scale: 24.084115982055664
+      Target Frame: <Fixed Frame>
+      Value: TopDownOrtho (rviz)
+      X: -1.7584714889526367
+      Y: -21.37480354309082
+    Saved:
+      - Class: rviz/Orbit
+        Distance: 59.950599670410156
+        Enable Stereo Rendering:
+          Stereo Eye Separation: 0.05999999865889549
+          Stereo Focal Distance: 1
+          Swap Stereo Eyes: false
+          Value: false
+        Focal Point:
+          X: -21.76569938659668
+          Y: -6.652589797973633
+          Z: -0.5177310109138489
+        Focal Shape Fixed Size: true
+        Focal Shape Size: 0.05000000074505806
+        Invert Z Axis: false
+        Name: Orbit
+        Near Clip Distance: 0.009999999776482582
+        Pitch: 1.5697963237762451
+        Target Frame: <Fixed Frame>
+        Value: Orbit (rviz)
+        Yaw: 5.96504020690918
+Window Geometry:
+  Displays:
+    collapsed: false
+  Height: 1016
+  Hide Left Dock: false
+  Hide Right Dock: false
+  QMainWindow State: 000000ff00000000fd00000004000000000000027c000003a2fc020000000cfb0000001200530065006c0065006300740069006f006e00000001e10000009b0000005c00fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000003b000003a2000000c700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261fb0000000a0049006d00610067006501000002ac000000cb0000000000000000fb0000000a0049006d0061006700650100000293000000c20000000000000000fb0000000c00430061006d00650072006101000003580000001f0000000000000000fb0000000c00430061006d00650072006100000003760000001f00000000000000000000000100000110000003a2fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073010000003b000003a2000000a000fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e100000197000000030000078000000046fc0100000002fb0000000800540069006d00650000000000000007800000042700fffffffb0000000800540069006d00650100000000000004500000000000000000000003e8000003a200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  Selection:
+    collapsed: false
+  Time:
+    collapsed: false
+  Tool Properties:
+    collapsed: false
+  Views:
+    collapsed: false
+  Width: 1920
+  X: 0
+  Y: 27
