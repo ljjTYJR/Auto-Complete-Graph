@@ -215,16 +215,12 @@ class VisuAutoCompleteGraphLocalization
             if (acg.getRobotPoseLocalization().size() > 0) {
                 nav_msgs::OccupancyGrid omap_occ;
                 int size_rl = acg.getRobotPoseLocalization().size();
-                perception_oru::toOccupancyGrid(
-                    acg.getRobotPoseLocalization()[size_rl - 1]->getMap().get(),
-                    omap_occ, 0.1, "/world");
+                perception_oru::toOccupancyGrid(acg.getRobotPoseLocalization()[size_rl - 1]->getMap().get(), omap_occ, 0.1, "/world");
                 _last_ndtmap2_occ.publish(omap_occ);
             }
         }
 
-        VisuAutoCompleteGraphBase<AutoCompleteGraphPriorXY, g2o::VertexXYPrior,
-                                  g2o::EdgeXYPriorACG>::updateRviz(acg);
-
+        VisuAutoCompleteGraphBase<AutoCompleteGraphPriorXY, g2o::VertexXYPrior, g2o::EdgeXYPriorACG>::updateRviz(acg);
         drawNDTCellObservations(acg);
         drawNDTCellAssociations(acg);
         drawNDTCells(acg);
@@ -291,26 +287,18 @@ inline void VisuAutoCompleteGraphLocalization::drawCorrectRobotPoses(
     _correct_robot_pose_pub.publish(_correct_robot_pose);
 }
 
-inline void VisuAutoCompleteGraphLocalization::drawLocalizationLandmarks(
-    const AutoCompleteGraphLocalization& acg) {
+inline void VisuAutoCompleteGraphLocalization::drawLocalizationLandmarks(const AutoCompleteGraphLocalization& acg) {
     _last_seen_landmark_in_mcl_pose.header.stamp = ros::Time::now();
     _last_seen_landmark_in_mcl_pose.points.clear();
-
-    std::cout << "There are " << acg.getLandmarkNodes().size() << " nodes "
-              << std::endl;
+    std::cout << "There are " << acg.getLandmarkNodes().size() << " nodes " << std::endl;
 
     for (auto landmark : acg.getLandmarkNodes()) {
-        std::unordered_set<std::shared_ptr<AASS::acg::LocalizationPointer>>
-            localization = landmark->getLocalization();
-
+        std::unordered_set<std::shared_ptr<AASS::acg::LocalizationPointer> > localization = landmark->getLocalization();
         for (auto loc : localization) {
             auto locali = acg.getRobotPoseLocalization();
-
-            if (loc->vertex_mcl_pose ==
-                locali[acg.getRobotPoseLocalization().size() - 1]) {
+            if (loc->vertex_mcl_pose == locali[acg.getRobotPoseLocalization().size() - 1]) {
                 geometry_msgs::Point p;
-                Eigen::Vector2d pose_landmark =
-                    loc->landmarkSeenByMCLInGlobalFrame().head(2);
+                Eigen::Vector2d pose_landmark = loc->landmarkSeenByMCLInGlobalFrame().head(2);
                 p.x = pose_landmark(0);
                 p.y = pose_landmark(1);
                 p.z = 0;
@@ -318,7 +306,6 @@ inline void VisuAutoCompleteGraphLocalization::drawLocalizationLandmarks(
             }
         }
     }
-
     _last_landmark.publish(_last_seen_landmark_in_mcl_pose);
 }
 

@@ -160,41 +160,34 @@ class AutoCompleteGraphLocalization
                               g2o::EdgeXYPriorACG>::print();
         std::cout << "Localization parameters: " << std::endl;
 
-        std::cout << "Number of localization nodes: "
-                  << _nodes_localization.size() << std::endl;
+        std::cout << "Number of localization nodes: " << _nodes_localization.size() << std::endl;
 
         std::cout << "Use robot maps: " << _use_robot_maps << std::endl;
         ///@brief register the submaps
-        std::cout << "Do own registration: " << _do_own_registration
-                  << std::endl;
+        std::cout << "Do own registration: " << _do_own_registration << std::endl;
         ///@brief Extract the corners from the submaps
         std::cout << "Extract corners: " << _extract_corners << std::endl;
         ///@brief Use the gaussian of the corner approximated by
         /// ndt_feature_finder
-        std::cout << "Use corner covariance: " << _use_corner_covariance
-                  << std::endl;
+        std::cout << "Use corner covariance: " << _use_corner_covariance << std::endl;
         ///@brief when adding obersvation between the prior and mcl, this is the
         /// threshold of the score for creating an observation. Score depend on
         /// mcl cov and distance between corners.
         std::cout << "Threshold for creating a link using MCL covariance: "
                   << _threshold_of_score_for_creating_a_link << std::endl;
         ///@brief do we want to scale the score a little bit to help out ?
-        std::cout << "Scaling factor for gaussians: "
-                  << _scaling_factor_gaussian << std::endl;
+        std::cout << "Scaling factor for gaussians: " << _scaling_factor_gaussian << std::endl;
 
-        std::cout << "Number of links to prior: " << _number_of_links_to_prior
-                  << std::endl;
+        std::cout << "Number of links to prior: " << _number_of_links_to_prior << std::endl;
 
-        std::cout << "Number of link to prior walls" << _edges_ndt_cell.size()
-                  << std::endl;
+        std::cout << "Number of link to prior walls" << _edges_ndt_cell.size() << std::endl;
     }
 
     virtual bool checkAbleToOptimize() {
         if (_number_of_links_to_prior > 0 || _edges_ndt_cell.size() > 0) {
             return true;
         } else {
-            ROS_INFO(
-                "Can't optimize because no observation have been made for now");
+            ROS_INFO("Can't optimize because no observation have been made for now");
         }
         return true;
     }

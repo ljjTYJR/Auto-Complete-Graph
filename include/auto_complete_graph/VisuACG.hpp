@@ -59,37 +59,22 @@ class VisuAutoCompleteGraphBase {
                               const std::string& world_frame_id = "/world")
         : _nb_of_zone(-1), _resolution(0.1) {
         _nh = nh;
-        _last_ndtmap_occ =
-            _nh.advertise<nav_msgs::OccupancyGrid>("lastgraphmap_acg_occ", 10);
-        _last_ndtmap2_occ =
-            _nh.advertise<nav_msgs::OccupancyGrid>("lastgraphmap_acg2_occ", 10);
-        _last_ndtmap_full_occ =
-            _nh.advertise<nav_msgs::OccupancyGrid>("occ_full", 10);
-        _prior_map_occ =
-            _nh.advertise<nav_msgs::OccupancyGrid>("occ_prior", 10);
-        _marker_pub =
-            _nh.advertise<visualization_msgs::Marker>("prior_marker", 10);
-        _ndt_node_pub =
-            _nh.advertise<visualization_msgs::Marker>("ndt_nodes_marker", 10);
-        _prior_node_pub =
-            _nh.advertise<visualization_msgs::Marker>("prior_nodes_marker", 10);
-        _corner_ndt_node_pub =
-            _nh.advertise<visualization_msgs::Marker>("corner_ndt_marker", 10);
+        _last_ndtmap_occ = _nh.advertise<nav_msgs::OccupancyGrid>("lastgraphmap_acg_occ", 10);
+        _last_ndtmap2_occ = _nh.advertise<nav_msgs::OccupancyGrid>("lastgraphmap_acg2_occ", 10);
+        _last_ndtmap_full_occ = _nh.advertise<nav_msgs::OccupancyGrid>("occ_full", 10);
+        _prior_map_occ = _nh.advertise<nav_msgs::OccupancyGrid>("occ_prior", 10);
+        _marker_pub = _nh.advertise<visualization_msgs::Marker>("prior_marker", 10);
+        _ndt_node_pub = _nh.advertise<visualization_msgs::Marker>("ndt_nodes_marker", 10);
+        _prior_node_pub = _nh.advertise<visualization_msgs::Marker>("prior_nodes_marker", 10);
+        _corner_ndt_node_pub = _nh.advertise<visualization_msgs::Marker>("corner_ndt_marker", 10);
         _angles_pub = _nh.advertise<visualization_msgs::Marker>("angles", 10);
-        _angles_prior_pub =
-            _nh.advertise<visualization_msgs::Marker>("angles_prior", 10);
-        _anglesw_pub =
-            _nh.advertise<visualization_msgs::Marker>("angleswidth", 10);
-        _anglesw_prior_pub =
-            _nh.advertise<visualization_msgs::Marker>("angleswidth_prior", 10);
-        _ndtmap =
-            _nh.advertise<ndt_map::NDTVectorMapMsg>("ndt_map_msg_node", 10);
-        _gaussian_pub = _nh.advertise<visualization_msgs::Marker>(
-            "gaussian_that_gave_corners", 10);
-        _gaussian_pub2 = _nh.advertise<visualization_msgs::Marker>(
-            "gaussian_that_gave_corners2", 10);
-        _observation_edge_pub =
-            _nh.advertise<visualization_msgs::Marker>("observation_edge", 10);
+        _angles_prior_pub = _nh.advertise<visualization_msgs::Marker>("angles_prior", 10);
+        _anglesw_pub = _nh.advertise<visualization_msgs::Marker>("angleswidth", 10);
+        _anglesw_prior_pub = _nh.advertise<visualization_msgs::Marker>("angleswidth_prior", 10);
+        _ndtmap = _nh.advertise<ndt_map::NDTVectorMapMsg>("ndt_map_msg_node", 10);
+        _gaussian_pub = _nh.advertise<visualization_msgs::Marker>( "gaussian_that_gave_corners", 10);
+        _gaussian_pub2 = _nh.advertise<visualization_msgs::Marker>( "gaussian_that_gave_corners2", 10);
+        _observation_edge_pub = _nh.advertise<visualization_msgs::Marker>("observation_edge", 10);
 
         _prior_edge_markers.type = visualization_msgs::Marker::LINE_LIST;
         _prior_edge_markers.header.frame_id = world_frame_id;
@@ -359,10 +344,8 @@ class VisuAutoCompleteGraphBase {
         const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg) {
         std::cout << "Not implemented" << std::endl;
     }
-    void drawCornersNdt(
-        const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg);
-    void drawGaussiansThatGaveCorners(
-        const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg);
+    void drawCornersNdt( const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg);
+    void drawGaussiansThatGaveCorners( const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg);
     void drawAngles(
         const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg);
     void drawPriorAngles(
@@ -454,18 +437,15 @@ inline void AASS::acg::
 }
 
 template <typename Prior, typename VertexPrior, typename EdgePrior>
-inline void AASS::acg::
-    VisuAutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::drawCornersNdt(
-        const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg) {
+inline void AASS::acg::VisuAutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::drawCornersNdt(
+                const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg) {
     _corner_ndt_node_markers.header.stamp = ros::Time::now();
     auto edges = acg.getLandmarkNodes();
     if (edges.size() != _corner_ndt_node_markers.points.size()) {
         _corner_ndt_node_markers.points.clear();
-        auto it = edges.begin();
-        for (it; it != edges.end(); ++it) {
+        for (auto it = edges.begin(); it != edges.end(); ++it) {
             geometry_msgs::Point p;
-            g2o::VertexLandmarkNDT* ptr =
-                dynamic_cast<g2o::VertexLandmarkNDT*>((*it));
+            g2o::VertexLandmarkNDT* ptr = dynamic_cast<g2o::VertexLandmarkNDT*>((*it));
             auto vertex = ptr->estimate();
             // Getting the translation out of the transform :
             // https://en.wikipedia.org/wiki/Transformation_matrix
@@ -476,9 +456,7 @@ inline void AASS::acg::
             _corner_ndt_node_markers.points.push_back(p);
         }
     }
-
     drawAngles(acg);
-
     _corner_ndt_node_pub.publish(_corner_ndt_node_markers);
 }
 

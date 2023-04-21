@@ -12,10 +12,10 @@ def send_msgs():
     points = [
         # prior/sensor; prior/sensor
         # Point(x = 36.001, y = -3.39, z = 0.0),
-        Point(x = -13.188, y = 57.509, z = 0.0),
-        Point(x = -2.520, y = 3.485, z = 0.0),
-        Point(x = -23.696, y = 53.363, z = 0.0),
-        Point(x = -15.414, y = -2.117, z = 0)
+        Point(x = -13.161, y = 57.8, z = 0.0),
+        Point(x = -4.151, y = 3.272, z = 0.0),
+        Point(x = 3.011, y = 57.13, z = 0.0),
+        Point(x = 20.25, y = 6.024, z = 0)
     ]
     for n in range(4):
         time.sleep(0.5)

@@ -199,8 +199,7 @@ class AutoCompleteGraph
             for (it; it != this->_nodes_landmark.end(); it++) {
                 Eigen::Vector2d pose_landmark = (*it)->estimate();
                 auto it_prior = this->_prior->getNodes().begin();
-                for (it_prior; it_prior != this->_prior->getNodes().end();
-                     ++it_prior) {
+                for (it_prior; it_prior != this->_prior->getNodes().end(); ++it_prior) {
                     // Don't add the same link twice
                     if (this->linkAlreadyExist(*it, *it_prior) == false) {
                         if (this->_flag_use_corner_orientation == false ||

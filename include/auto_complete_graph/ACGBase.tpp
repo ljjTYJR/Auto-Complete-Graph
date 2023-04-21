@@ -46,7 +46,7 @@ AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::addRobotPose(
 
 template <typename Prior, typename VertexPrior, typename EdgePrior>
 inline g2o::VertexLandmarkNDT* AASS::acg::
-    AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::addLandmarkPose(
+        AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::addLandmarkPose(
         const g2o::Vector2& estimate,
         const cv::Point2f& position,
         int strength) {
@@ -55,8 +55,10 @@ inline g2o::VertexLandmarkNDT* AASS::acg::
     ++new_id_;
     landmark->setEstimate(estimate);
     landmark->position = position;
+    ROS_WARN_STREAM("The estimates are " << estimate << "The positions are " << position);
     _optimizable_graph.addVertex(landmark);
     _nodes_landmark.push_back(landmark);
+    std::cout << "Adding landmark " << landmark->id() << std::endl;
     return landmark;
 }
 
@@ -396,32 +398,25 @@ inline void AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::
     perception_oru::ndt_feature_finder::NDTCorner cornersExtractor;
     ROS_DEBUG_STREAM("hopidy");
     auto ret_export = cornersExtractor.getAllCorners(*map);
-    ROS_DEBUG_STREAM("gotall corner");
     ROS_DEBUG_STREAM("got all accurate corners");
 
-    auto it = ret_export.begin();
-
-    ROS_DEBUG_STREAM("Found " << ret_export.size() << " corners ");
+    ROS_WARN_STREAM("Found " << ret_export.size() << " corners ");
     // Find all the observations :
 
     //**************** HACK: translate the corners now : **************//
 
-    for (it; it != ret_export.end(); ++it) {
+    for (auto it = ret_export.begin(); it != ret_export.end(); ++it) {
         ROS_DEBUG_STREAM("Corner size " << it->getOrientations().size());
         // Limited to corners that possess an orientation.
         if (it->getOrientations().size() > 0) {
             Eigen::Vector3d vec;
-            ROS_DEBUG_STREAM("Corner size ");
-            vec << it->getMeanOpenCV().x, it->getMeanOpenCV().y,
-                it->getOrientations()[0];
+            vec << it->getMeanOpenCV().x, it->getMeanOpenCV().y, it->getOrientations()[0];
+            ROS_WARN_STREAM("The orientation of the corner is " << vec(2));
 
-            ROS_DEBUG_STREAM("Corner size ");
             cv::Point2f p_out;
             Eigen::Vector3d landmark_robotframe;
-            translateFromRobotFrameToGlobalFrame(vec, robot_pos,
-                                                 landmark_robotframe);
+            translateFromRobotFrameToGlobalFrame(vec, robot_pos, landmark_robotframe);
 
-            ROS_DEBUG_STREAM("Corner size ");
             p_out.x = landmark_robotframe(0);
             p_out.y = landmark_robotframe(1);
 
@@ -430,18 +425,14 @@ inline void AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::
             std::vector<double> orientations;
             std::vector<double> angles_width;
 
-            ROS_DEBUG_STREAM("Corner size ");
             double angle_landmark = vec(2);
 
-            ROS_DEBUG_STREAM("Corner size ");
-            for (auto it_orientation = it->getOrientations().begin();
-                 it_orientation != it->getOrientations().end();
+            for (auto it_orientation = it->getOrientations().begin(); it_orientation != it->getOrientations().end();
                  ++it_orientation) {
                 ROS_DEBUG_STREAM("Pushing back orientation");
                 orientations.push_back((*it_orientation));
             }
-            for (auto it_angles = it->getAngles().begin();
-                 it_angles != it->getAngles().end(); ++it_angles) {
+            for (auto it_angles = it->getAngles().begin(); it_angles != it->getAngles().end(); ++it_angles) {
                 ROS_DEBUG_STREAM("Pushing back angle");
                 angles_width.push_back((*it_angles));
             }
@@ -463,8 +454,7 @@ inline void AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::
 // TODO: refactor this!
 template <typename Prior, typename VertexPrior, typename EdgePrior>
 inline void AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::
-    extractCornerNDTMap(const std::shared_ptr<perception_oru::NDTMap>& map,
-                        g2o::VertexSE2RobotPose* robot_ptr,
+    extractCornerNDTMap(const std::shared_ptr<perception_oru::NDTMap>& map, g2o::VertexSE2RobotPose* robot_ptr,
                         const g2o::SE2& robot_pos) {
     // HACK For now : we translate the Corner extracted and not the ndt-maps
     auto cells = map->getAllCellsShared();
@@ -475,20 +465,19 @@ inline void AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::
     double cell_size = x2;
 
     std::vector<AASS::acg::NDTCornerGraphElement> corners_end;
-    getAllCornersNDTTranslatedToGlobalAndRobotFrame(map, robot_ptr, robot_pos,
-                                                    corners_end);
+    getAllCornersNDTTranslatedToGlobalAndRobotFrame(map, robot_ptr, robot_pos, corners_end);
 
     /***************** ADD THE CORNERS INTO THE GRAPH***********************/
 
     for (size_t i = 0; i < corners_end.size(); ++i) {
         bool seen = false;
         g2o::VertexLandmarkNDT* ptr_landmark_seen = NULL;
+        // Question: Check if the landmark is already in the graph
         for (size_t j = 0; j < _nodes_landmark.size(); ++j) {
             g2o::Vector2 landmark = _nodes_landmark[j]->estimate();
             cv::Point2f point_land(landmark(0), landmark(1));
 
-            double res =
-                cv::norm(point_land - corners_end[i].position_in_robot_frame);
+            double res = cv::norm(point_land - corners_end[i].position_in_robot_frame);
 
             ROS_DEBUG_STREAM("res : ");
 
@@ -496,13 +485,15 @@ inline void AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::
             if (res < cell_size * 2) {
                 seen = true;
                 ptr_landmark_seen = _nodes_landmark[j];
+                // TODO: do we need to break here?
             }
         }
+        // If we didn't find the landmark, we add it to the graph
         if (seen == false) {
             ROS_DEBUG_STREAM("New point " << i);
             g2o::Vector2 position_globalframe;
             position_globalframe << corners_end[i].position_in_robot_frame.x,
-                corners_end[i].position_in_robot_frame.y;
+                                    corners_end[i].position_in_robot_frame.y;
 
             cv::Point2f p_observation;
             ROS_DEBUG_STREAM("New point " << i);
@@ -510,10 +501,8 @@ inline void AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::
             ROS_DEBUG_STREAM("New point " << i);
             p_observation.y = corners_end[i].getObservations()(1);
             ROS_DEBUG_STREAM("New point " << i);
-            g2o::VertexLandmarkNDT* ptr =
-                addLandmarkPose(position_globalframe, p_observation, 1);
-            ptr->addAnglesOrientations(corners_end[i].getAngles(),
-                                       corners_end[i].getOrientations());
+            g2o::VertexLandmarkNDT* ptr = addLandmarkPose(position_globalframe, p_observation, 1);
+            ptr->addAnglesOrientations(corners_end[i].getAngles(), corners_end[i].getOrientations());
             ptr->first_seen_from = robot_ptr;
 
             // TESTING to visualise which cells gave the corner
@@ -522,14 +511,11 @@ inline void AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::
             ptr->robotpose_seen_from = robot_pos;
             // END OF TEST
 
-            addLandmarkObservation(corners_end[i].getObservations(),
-                                   corners_end[i].getNodeLinkedPtr(), ptr);
+            addLandmarkObservation(corners_end[i].getObservations(), corners_end[i].getNodeLinkedPtr(), ptr);
         } else {
-            // TODO
+            // If we found the landmark, we save the data
             ROS_DEBUG_STREAM("Point seen ");
-            addLandmarkObservation(corners_end[i].getObservations(),
-                                   corners_end[i].getNodeLinkedPtr(),
-                                   ptr_landmark_seen);
+            addLandmarkObservation(corners_end[i].getObservations(), corners_end[i].getNodeLinkedPtr(), ptr_landmark_seen);
         }
     }
 }

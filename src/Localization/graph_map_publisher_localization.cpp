@@ -59,6 +59,39 @@
 #define MAX_TRANSLATION_DELTA 2.0
 #define MAX_ROTATION_DELTA 0.5
 #endif
+
+bool sameMatrix(Eigen::Affine3d& a, Eigen::Affine3d& b) {
+    double diff = (a.matrix() - b.matrix()).norm();
+    if (diff < 0.0001) {
+        return true;
+    }
+    return false;
+}
+
+void dumpFuseInfoOfTheFrame(bool fuse_flag, Eigen::Affine3d& predicted_pose, Eigen::Affine3d& pose_, unsigned int frame_idx) {
+    if (fuse_flag) {
+        ROS_INFO_STREAM("Fusing this frame! Index: " << frame_idx);
+        if (sameMatrix(predicted_pose, pose_)) {
+            ROS_WARN_STREAM("Predicted pose is the same as the current pose!");
+        }
+    } else {
+        ROS_DEBUG_STREAM("Skip this frame");
+    }
+}
+
+void sendPoseBetweenTwoLinks(Eigen::Affine3d& pose, const ros::Time& time, const std::string& frame_id, const std::string& child_frame_id) {
+    static tf::TransformBroadcaster br;
+    tf::Transform transform;
+    tf::poseEigenToTF(pose, transform);
+    br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), frame_id, child_frame_id));
+}
+
+void publishOdomMsg(ros::Publisher& pub, nav_msgs::Odometry& odom_msg, Eigen::Affine3d& pose, const ros::Time& time) {
+    odom_msg.header.stamp = time;
+    tf::poseEigenToMsg(pose, odom_msg.pose.pose);
+    pub.publish(odom_msg);
+}
+
 /** \brief A ROS node which implements an NDTFuser or NDTFuserHMT object
  * \author Daniel adolfsson based on code from Todor Stoyanov
  *
@@ -88,7 +121,7 @@ void getAngles(const std::string& base_frame,
 tf::StampedTransform getPoseTFTransform(const std::string& base_frame,
                                         const std::string& to_frame,
                                         ros::Time time = ros::Time(0)) {
-    ROS_DEBUG("GEt pose ");
+    ROS_DEBUG("Get pose");
     tf::TransformListener listener;
     tf::StampedTransform transform;
 
@@ -96,8 +129,7 @@ tf::StampedTransform getPoseTFTransform(const std::string& base_frame,
     do {
         try {
             time = ros::Time(0);
-            bool hunm = listener.waitForTransform(base_frame, to_frame, time,
-                                                  ros::Duration(1.0));
+            bool hunm = listener.waitForTransform(base_frame, to_frame, time, ros::Duration(1.0));
             listener.lookupTransform(base_frame, to_frame, time, transform);
             good_transformation = true;
         } catch (tf::TransformException ex) {
@@ -180,23 +212,20 @@ class GraphMapFuserNode {
     std::string map_type_name, reg_type_name;
     std::string map_name = "graph_map";
     std::string points_topic, laser_topic, map_dir, odometry_topic,
-        odometry_adjusted_topic, robot_frame;
+                odometry_adjusted_topic, robot_frame;
     std::string file_format_map = ".JFF";
     std::string world_link_id, map_link_id, odometry_link_id,
-        fuser_base_link_id, laser_link_id, init_pose_frame, gt_topic, bag_name,
-        state_base_link_id;
+                fuser_base_link_id, laser_link_id, init_pose_frame, gt_topic, bag_name,
+                state_base_link_id;
     std::string acg_maps_topic;
     double size_x, size_y, size_z, resolution, sensor_range, min_laser_range_;
     bool visualize, match2D, matchLaser, beHMT, useOdometry, initPoseFromGT,
-        initPoseFromTF, initPoseSet, gt_mapping;
+         initPoseFromTF, initPoseSet, gt_mapping;
     double zfilter_min_;
 
-    double pose_init_x, pose_init_y, pose_init_z, pose_init_r, pose_init_p,
-        pose_init_t;
-    double sensor_pose_x, sensor_pose_y, sensor_pose_z, sensor_pose_r,
-        sensor_pose_p, sensor_pose_t;
+    double pose_init_x, pose_init_y, pose_init_z, pose_init_r, pose_init_p, pose_init_t;
+    double sensor_pose_x, sensor_pose_y, sensor_pose_z, sensor_pose_r, sensor_pose_p, sensor_pose_t;
     double sensor_offset_t_, fraction, cutoff, initVar;
-
     bool use_graph_map_registration_;
 
     bool init_fuser_;
@@ -222,22 +251,20 @@ class GraphMapFuserNode {
     bool use_mcl_;
 
     bool mcl_loaded_ = false;
-    ros::Publisher mcl_pub_, laser_point_cloud_pub_, mcl_local_map_,
-        mcl_map_pub_;
+    ros::Publisher mcl_pub_, laser_point_cloud_pub_, mcl_local_map_, mcl_map_pub_;
     ros::Publisher particlePub_;
     double cov_x_mcl, cov_y_mcl, cov_yaw_mcl, scale_gaussian_mcl;
 
     boost::shared_ptr<AASS::acg::ACGMCLLocalization> acg_localization;
 
     double _cell_neighborhood_size_mcl_in_meters;
-    bool _use_euclidean_mcl, _use_euclidean_for_long_distances,
-        _use_hybrid_strategy_mcl;
+    bool _use_euclidean_mcl, _use_euclidean_for_long_distances, _use_hybrid_strategy_mcl;
     bool _use_mean_score_mcl;
 
     int SIRCount = 0;
     double var_part = 0.1;
 
-   public:
+public:
     // Constructor
     GraphMapFuserNode(ros::NodeHandle param_nh)
         : frame_nr_(0), mcl_loaded_(false), init_fuser_(false), fuser_(NULL) {
@@ -253,8 +280,7 @@ class GraphMapFuserNode {
         /// topic to wait for laser scan messages, if available
         param_nh.param<std::string>("laser_topic", laser_topic, "laser_scan");
 
-        param_nh.param<std::string>("acg_maps_topic", acg_maps_topic,
-                                    "acg_maps");
+        param_nh.param<std::string>("acg_maps_topic", acg_maps_topic, "acg_maps");
 
         /// only match 2ith 3dof
         param_nh.param("match2D", match2D, true);
@@ -339,8 +365,7 @@ class GraphMapFuserNode {
         param_nh.param<std::string>("odometry_topic", odometry_topic,
                                     "odometry");
 
-        param_nh.param<std::string>(
-            "odometry_adjusted", odometry_adjusted_topic, "odometry_adjusted");
+        param_nh.param<std::string>("odometry_adjusted", odometry_adjusted_topic, "odometry_adjusted");
         // get it from TF?
         param_nh.param("initPoseFromTF", initPoseFromTF, false);
 
@@ -349,20 +374,16 @@ class GraphMapFuserNode {
         param_nh.param<std::string>("world_frame", world_link_id, "/world");
         param_nh.param<std::string>("map_frame", map_link_id, "/map");
         // our frame
-        param_nh.param<std::string>("fuser_frame_id", fuser_base_link_id,
-                                    "/fuser_base_link");
-        param_nh.param<std::string>("laser_frame_id", laser_link_id,
-                                    "/velodyne");
+        param_nh.param<std::string>("fuser_frame_id", fuser_base_link_id, "/fuser_base_link");
+        param_nh.param<std::string>("laser_frame_id", laser_link_id, "/velodyne");
 
-        param_nh.param<std::string>("state_base_link_id", state_base_link_id,
-                                    "/state_base_link");
+        param_nh.param<std::string>("state_base_link_id", state_base_link_id, "/state_base_link");
 
         /// use standard odometry messages for initialuess
         param_nh.param("useOdometry", useOdometry, true);
 
         param_nh.param<bool>("use_tf_listener", use_tf_listener_, false);
-        param_nh.param<std::string>("odometry_frame_id", odometry_link_id,
-                                    std::string("/odom_base_link"));
+        param_nh.param<std::string>("odometry_frame_id", odometry_link_id, std::string("/odom_base_link"));
 
         initPoseSet = false;
         param_nh.param<bool>("do_soft_constraints", do_soft_constraints, false);
@@ -371,24 +392,17 @@ class GraphMapFuserNode {
         param_nh.param<std::string>("robot_frame", robot_frame, "/base_link");
 
         param_nh.param("use_mcl", use_mcl_, true);
-        param_nh.param("use_graph_map_registration",
-                       use_graph_map_registration_, true);
+        param_nh.param("use_graph_map_registration", use_graph_map_registration_, true);
         param_nh.param<double>("zfilter_min", zfilter_min_, 0);
 
         fuser_odom.header.frame_id = world_link_id;
         adjusted_odom_msg.header.frame_id = world_link_id;
-        laser_publisher_ = param_nh.advertise<sensor_msgs::LaserScan>(
-            "laserscan_in_fuser_frame", 50);
+        laser_publisher_ = param_nh.advertise<sensor_msgs::LaserScan>("laserscan_in_fuser_frame", 50);
         occupancy_grid_map_publisher_ = param_nh.advertise<nav_msgs::OccupancyGrid>("latest_occupancy_grid_map", 10);
-
-        graph_map_ndt_map_pub_ = param_nh.advertise<ndt_map::NDTMapMsg>(
-            "graph_map_ndt_map", 10);
-        point2_publisher_ =
-            param_nh.advertise<sensor_msgs::PointCloud2>("point2_fuser", 15);
-        fuser_odom_publisher_ =
-            param_nh.advertise<nav_msgs::Odometry>("fuser", 50);
-        adjusted_odom_publisher_ =
-            param_nh.advertise<nav_msgs::Odometry>("odom_gt_init", 50);
+        graph_map_ndt_map_pub_ = param_nh.advertise<ndt_map::NDTMapMsg>("graph_map_ndt_map", 10);
+        point2_publisher_ = param_nh.advertise<sensor_msgs::PointCloud2>("point2_fuser", 15);
+        fuser_odom_publisher_ = param_nh.advertise<nav_msgs::Odometry>("fuser", 50);
+        adjusted_odom_publisher_ = param_nh.advertise<nav_msgs::Odometry>("odom_gt_init", 50);
 
         param_nh.param<double>("fraction", fraction, 1.0);
         param_nh.param<double>("cutoff", cutoff, -10);
@@ -398,32 +412,21 @@ class GraphMapFuserNode {
         param_nh.param<double>("cov_y_mcl", cov_y_mcl, 0.5);
         param_nh.param<double>("cov_yaw_mcl", cov_yaw_mcl, 0.5);
         param_nh.param<double>("scale_gaussian_mcl", scale_gaussian_mcl, 0.005);
-        param_nh.param<double>("cell_neighborhood_size_mcl_in_meters",
-                               _cell_neighborhood_size_mcl_in_meters, 1);
-        param_nh.param("use_euclidean_for_long_distances",
-                       _use_euclidean_for_long_distances, true);
-        param_nh.param("use_hybrid_strategy_mcl", _use_hybrid_strategy_mcl,
-                       true);
+        param_nh.param<double>("cell_neighborhood_size_mcl_in_meters", _cell_neighborhood_size_mcl_in_meters, 1);
+        param_nh.param("use_euclidean_for_long_distances", _use_euclidean_for_long_distances, true);
+        param_nh.param("use_hybrid_strategy_mcl", _use_hybrid_strategy_mcl, true);
         param_nh.param("use_euclidean_mcl", _use_euclidean_mcl, false);
         param_nh.param("use_mean_score_mcl", _use_mean_score_mcl, false);
         param_nh.param("publisher_timer", publisher_timer, false);
 
         if (gt_mapping)
-            use_tf_listener_ =
-                use_tf_listener_ &&
-                state_base_link_id !=
-                    std::string("");  // check if odometry topic exists
+            use_tf_listener_ = use_tf_listener_ && (state_base_link_id != std::string(""));  // check if odometry topic exists
         else
-            use_tf_listener_ =
-                use_tf_listener_ &&
-                odometry_link_id !=
-                    std::string("");  // check if odometry topic exists
+            use_tf_listener_ = use_tf_listener_ && (odometry_link_id != std::string(""));  // check if odometry topic exists
 
         std::cout << "SHould init from tf ? " << init_pose_tf_ << std::endl;
 
-        sensorPose_ =
-            Eigen::Translation<double, 3>(sensor_pose_x, sensor_pose_y,
-                                          sensor_pose_z) *
+        sensorPose_ = Eigen::Translation<double, 3>(sensor_pose_x, sensor_pose_y, sensor_pose_z) *
             Eigen::AngleAxis<double>(sensor_pose_t, Eigen::Vector3d::UnitZ()) *
             Eigen::AngleAxis<double>(sensor_pose_p, Eigen::Vector3d::UnitY()) *
             Eigen::AngleAxis<double>(sensor_pose_r, Eigen::Vector3d::UnitX());
@@ -431,169 +434,93 @@ class GraphMapFuserNode {
         tf::poseEigenToTF(sensorPose_, tf_sensor_pose_);
 
         if (!initPoseFromGT && !init_pose_tf_) {
-            pose_ =
-                Eigen::Translation<double, 3>(pose_init_x, pose_init_y,
-                                              pose_init_z) *
-                Eigen::AngleAxis<double>(pose_init_t, Eigen::Vector3d::UnitZ()) *
-                Eigen::AngleAxis<double>(pose_init_p, Eigen::Vector3d::UnitY()) *
-                Eigen::AngleAxis<double>(pose_init_r, Eigen::Vector3d::UnitX());
+            pose_ = Eigen::Translation<double, 3>(pose_init_x, pose_init_y, pose_init_z) *
+                    Eigen::AngleAxis<double>(pose_init_t, Eigen::Vector3d::UnitZ()) *
+                    Eigen::AngleAxis<double>(pose_init_p, Eigen::Vector3d::UnitY()) *
+                    Eigen::AngleAxis<double>(pose_init_r, Eigen::Vector3d::UnitX());
             initPoseSet = true;
-
-            fuser_ = new GraphMapFuser(map_type_name, reg_type_name, pose_,
-                                       sensorPose_);
+            fuser_ = new GraphMapFuser(map_type_name, reg_type_name, pose_, sensorPose_);
             cout << "set fuser viz=" << visualize << endl;
             fuser_->Visualize(visualize);
         }
 
         cout << "node: initial pose =\n" << pose_.translation() << endl;
 
-        std::cout << "param \n"
-                  << matchLaser << " " << useOdometry << " " << gt_mapping
-                  << " " << use_tf_listener_ << std::endl;
+        std::cout << "param \n" << matchLaser << " " << useOdometry << " " << gt_mapping << " " << use_tf_listener_ << std::endl;
 
         if (!matchLaser) {
             std::cout << "No match laser " << std::endl;
-            points2_sub_ =
-                new message_filters::Subscriber<sensor_msgs::PointCloud2>(
-                    nh_, points_topic, 2);
+            points2_sub_ = new message_filters::Subscriber<sensor_msgs::PointCloud2>(nh_, points_topic, 10);
             if (useOdometry) {
                 if (gt_mapping) {
                     if (!use_tf_listener_) {
-                        gt_fuser_sub_ =
-                            new message_filters::Subscriber<nav_msgs::Odometry>(
-                                nh_, gt_topic, 10);
-                        sync_GTodom_ =
-                            new message_filters::Synchronizer<PointsGTOdomSync>(
-                                PointsGTOdomSync(SYNC_FRAMES), *points2_sub_,
-                                *gt_fuser_sub_);
+                        gt_fuser_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_, gt_topic, 10);
+                        sync_GTodom_ = new message_filters::Synchronizer<PointsGTOdomSync>(PointsGTOdomSync(SYNC_FRAMES), *points2_sub_, *gt_fuser_sub_);
                         std::cout << "use no tf: " << points_topic << std::endl;
-                        sync_GTodom_->registerCallback(boost::bind(
-                            &GraphMapFuserNode::GTLaserPointsOdomCallback, this,
-                            _1, _2));
-                    } else
+                        sync_GTodom_->registerCallback(boost::bind( &GraphMapFuserNode::GTLaserPointsOdomCallback, this, _1, _2));
+                    } else {
                         std::cout << "use tf: " << points_topic << std::endl;
-                    points2OdomTfSub = nh_.subscribe<sensor_msgs::PointCloud2>(
-                        points_topic, 10,
-                        &GraphMapFuserNode::GTLaserPointsOdomCallbackTF, this);
+                        points2OdomTfSub = nh_.subscribe<sensor_msgs::PointCloud2>( points_topic, 10, &GraphMapFuserNode::GTLaserPointsOdomCallbackTF, this);
+                    }
                 } else {
                     if (!use_tf_listener_) {
-                        odom_sub_ =
-                            new message_filters::Subscriber<nav_msgs::Odometry>(
-                                nh_, odometry_topic, 10);
-                        sync_po_ =
-                            new message_filters::Synchronizer<PointsOdomSync>(
-                                PointsOdomSync(SYNC_FRAMES), *points2_sub_,
-                                *odom_sub_);
-                        std::cout << "use no gt mapping no tf: " << points_topic
-                                  << " and odom " << odometry_topic
-                                  << std::endl;
-                        sync_po_->registerCallback(
-                            boost::bind(&GraphMapFuserNode::points2OdomCallback,
-                                        this, _1, _2));
+                        odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_, odometry_topic, 10);
+                        sync_po_ = new message_filters::Synchronizer<PointsOdomSync>(PointsOdomSync(SYNC_FRAMES), *points2_sub_, *odom_sub_);
+                        std::cout << "use no gt mapping no tf: " << points_topic << " and odom " << odometry_topic << std::endl;
+                        sync_po_->registerCallback(boost::bind(&GraphMapFuserNode::points2OdomCallback, this, _1, _2));
                     } else {
-                        std::cout << "use no gt mapping tf: " << points_topic
-                                  << std::endl;
-                        points2OdomTfSub =
-                            nh_.subscribe<sensor_msgs::PointCloud2>(
-                                points_topic, 10,
-                                &GraphMapFuserNode::points2OdomCallbackTF,
-                                this);
+                        std::cout << "use no gt mapping tf: " << points_topic << std::endl;
+                        points2OdomTfSub = nh_.subscribe<sensor_msgs::PointCloud2>(points_topic, 10, &GraphMapFuserNode::points2OdomCallbackTF, this);
                     }
                 }
             }
         } else {
             std::cout << "match laser: " << laser_topic << std::endl;
-            laser_sub_ =
-                new message_filters::Subscriber<sensor_msgs::LaserScan>(
-                    nh_, laser_topic, 20);
+            laser_sub_ = new message_filters::Subscriber<sensor_msgs::LaserScan>(nh_, laser_topic, 20);
             if (useOdometry) {
                 std::cout << "USE ODOM" << std::endl;
-                std::cout << "use no gt mapping no tf: " << laser_topic
-                          << " and odom " << odometry_topic << std::endl;
-                odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(
-                    nh_, odometry_topic, 20);
-                sync_lo_ = new message_filters::Synchronizer<LaserOdomSync>(
-                    LaserOdomSync(SYNC_FRAMES), *laser_sub_, *odom_sub_);
-                sync_lo_->registerCallback(boost::bind(
-                    &GraphMapFuserNode::laserOdomCallback, this, _1, _2));
+                std::cout << "use no gt mapping no tf: " << laser_topic << " and odom " << odometry_topic << std::endl;
+                odom_sub_ = new message_filters::Subscriber<nav_msgs::Odometry>(nh_, odometry_topic, 20);
+                sync_lo_ = new message_filters::Synchronizer<LaserOdomSync>(LaserOdomSync(SYNC_FRAMES), *laser_sub_, *odom_sub_);
+                sync_lo_->registerCallback(boost::bind(&GraphMapFuserNode::laserOdomCallback, this, _1, _2));
             } else {
                 std::cout << "DO NOTHING " << std::endl;
-                // 		  exit(0);
-                laser_sub_->registerCallback(
-                    boost::bind(&GraphMapFuserNode::laserCallback, this, _1));
-                // //         ((void)0); //Do nothing, seriously consider using
-                // a laser only callback (no odometry sync)
+                laser_sub_->registerCallback(boost::bind(&GraphMapFuserNode::laserCallback, this, _1));
             }
         }
+
         if (initPoseFromGT) {
             std::cout << "init pose gt" << std::endl;
-            gt_sub = nh_.subscribe<nav_msgs::Odometry>(
-                gt_topic, 10, &GraphMapFuserNode::gt_callback, this);
+            gt_sub = nh_.subscribe<nav_msgs::Odometry>(gt_topic, 10, &GraphMapFuserNode::gt_callback, this);
         }
-        save_map_ = param_nh.advertiseService(
-            "save_map", &GraphMapFuserNode::save_map_callback, this);
+        save_map_ = param_nh.advertiseService("save_map", &GraphMapFuserNode::save_map_callback, this);
         cout << "init done" << endl;
 
         // Publisher of graph_map message
 
-        graphmap_pub_ = param_nh.advertise<graph_map_custom_msgs::GraphMapMsg>(
-            "graph_map", 50);
-        graph_map_vector_ = param_nh.advertise<ndt_map::NDTVectorMapMsg>(
-            "graph_map_vector", 50);
-        graphmap_localization_pub =
-            param_nh.advertise<auto_complete_graph::GraphMapLocalizationMsg>(
-                "graph_map_localization", 50);
+        graphmap_pub_ = param_nh.advertise<graph_map_custom_msgs::GraphMapMsg>("graph_map", 50);
+        graph_map_vector_ = param_nh.advertise<ndt_map::NDTVectorMapMsg>("graph_map_vector", 50);
+        graphmap_localization_pub = param_nh.advertise<auto_complete_graph::GraphMapLocalizationMsg>("graph_map_localization", 50);
 
         if (use_mcl_) {
-            // TEST
-            //  // 		std::string file =
-            //  "/home/malcolm/Documents/basement2d_map.jff";
-            //  // 	// 	map.loadFromJFF(file.c_str());
-            //  // 		double resolution = 0.2;
-            //  // 		auto mapGrid = new
-            //  perception_oru::LazyGrid(resolution);
-            //  // 		perception_oru::NDTMap map(mapGrid);
-            //  // 		if(map.loadFromJFF(file.c_str()) < 0)
-            //  // 			std::cout << "File didn't load" <<
-            //  std::endl;
-            //  // 		std::cout << "File loaded" << std::endl;
-            //  // 		mcl_loaded_ = true;
-
-            // 	mcl
-            // 	perception_oru::NDTMap ndtmap;
             std::cout << "new mcl" << std::endl;
-            // 		NDTMCL* ndtmcl = new NDTMCL(resolution, map, -0.5);
-
-            // 		NDTMCL* ndtmcl = new NDTMCL();
-            // 		std::cout << "new mcl done" << std::endl;
-            // 		ndtmcl_ = boost::shared_ptr<NDTMCL>(ndtmcl);
-            ndt_mcl_map = nh_.subscribe<auto_complete_graph::ACGMaps>(
-                acg_maps_topic, 10, &GraphMapFuserNode::updateAll, this);
+            ndt_mcl_map = nh_.subscribe<auto_complete_graph::ACGMaps>(acg_maps_topic, 10, &GraphMapFuserNode::updateAll, this);
 
             mcl_pub_ = nh_.advertise<nav_msgs::Odometry>("ndt_mcl", 10);
 
-            laser_point_cloud_pub_ =
-                param_nh.advertise<sensor_msgs::PointCloud2>("mcl_point_cloud",
-                                                             50);
+            laser_point_cloud_pub_ = param_nh.advertise<sensor_msgs::PointCloud2>("mcl_point_cloud", 50);
 
-            mcl_local_map_ =
-                param_nh.advertise<ndt_map::NDTMapMsg>("local_mcl_map", 50);
-            mcl_map_pub_ =
-                param_nh.advertise<ndt_map::NDTMapMsg>("mcl_map_internal", 50);
-            particlePub_ =
-                param_nh.advertise<geometry_msgs::PoseArray>("particles", 1);
-
+            mcl_local_map_ = param_nh.advertise<ndt_map::NDTMapMsg>("local_mcl_map", 50);
+            mcl_map_pub_ = param_nh.advertise<ndt_map::NDTMapMsg>("mcl_map_internal", 50);
+            particlePub_ = param_nh.advertise<geometry_msgs::PoseArray>("particles", 1);
             std::cout << "Init mcl done" << std::endl;
 
-            publisher_graph_map = nh_.subscribe<std_msgs::Bool::ConstPtr>(
-                "/pub_graph_map_now", 10, &GraphMapFuserNode::pubGraphMap,
-                this);
+            publisher_graph_map = nh_.subscribe<std_msgs::Bool::ConstPtr>("/pub_graph_map_now", 10, &GraphMapFuserNode::pubGraphMap, this);
         } else {
             std::cout << "ATTENTION NO MCL" << std::endl;
         }
 
-        timer_transformation_map = nh_.createTimer(
-            ros::Duration(0.1), &GraphMapFuserNode::timerCallback, this);
+        timer_transformation_map = nh_.createTimer(ros::Duration(0.1), &GraphMapFuserNode::timerCallback, this);
 
         Transform_map.setIdentity();
 
@@ -616,14 +543,13 @@ class GraphMapFuserNode {
     void pubGraphMap(const std_msgs::Bool::ConstPtr msg) {
         ROS_INFO("Publishing graph map message");
         ndt_map::NDTVectorMapMsg vector_maps;
-        perception_oru::graph_map::graphMapToVectorMap(
-            *(fuser_->GetGraph()), vector_maps, world_link_id);
+        perception_oru::graph_map::graphMapToVectorMap(*(fuser_->GetGraph()), vector_maps, world_link_id);
+        std::cout << "The size of the vector map is: " << vector_maps.maps.size() << std::endl;
         graph_map_vector_.publish(vector_maps);
 
         // Publish message
         graph_map_custom_msgs::GraphMapMsg graphmapmsg;
-        perception_oru::graph_map::graphMapToMsg(*(fuser_->GetGraph()),
-                                                 graphmapmsg, map_link_id);
+        perception_oru::graph_map::graphMapToMsg(*(fuser_->GetGraph()), graphmapmsg, map_link_id);
 
         auto nodes = fuser_->GetGraph()->GetMapNodes();
         auto size = nodes.size();
@@ -633,8 +559,7 @@ class GraphMapFuserNode {
         NDTMapType* node_ptr = dynamic_cast<NDTMapType*>(latest_map.get());
         perception_oru::NDTMap* map_ptr = node_ptr->GetNDTMap();
         nav_msgs::OccupancyGrid latest_occupancy_grid_submap;
-        perception_oru::toOccupancyGrid(map_ptr, latest_occupancy_grid_submap,
-                                        0.05, fuser_base_link_id);
+        perception_oru::toOccupancyGrid(map_ptr, latest_occupancy_grid_submap, 0.05, fuser_base_link_id);
         // Transform the origin of the occupancy grid map
         ROS_INFO("The positions of the occupancy grid map are: %f %f %f",
                  latest_pose.translation().x(), latest_pose.translation().y(),
@@ -649,62 +574,32 @@ class GraphMapFuserNode {
         for (auto time : times) {
             graphmapmsg.nodes[count].time_sec.data = time.first;
             graphmapmsg.nodes[count].time_nsec.data = time.second;
-            std::cout << "Adding the time " << std::fixed
-                      << std::setprecision(8) << (double)time.first << " "
-                      << (double)time.second << std::endl;
+            ROS_DEBUG_STREAM("Adding the time " << std::fixed << std::setprecision(8) << (double)time.first << " "
+                                                << (double)time.second);
             count++;
         }
-
-        // 			std::cout << "PUBLISH " << graphmapmsg.nodes.size() <<
-        // std::endl;
-        //
         if (use_mcl_ && mcl_loaded_) {
-            ROS_DEBUG(
-                "*************************** > Real Localization < "
-                "****************************");
-
-            //			std::cout << acg_localization->getLocalizations().size() <<
-            //" == " <<  nb_of_node_new << std::endl;
-            //			assert(acg_localization->getLocalizations().size() ==
-            //nb_of_node_new);
-
-            auto_complete_graph::GraphMapLocalizationMsg
-                graphmaplocalizationmsg;
+            ROS_DEBUG("*************************** > Real Localization < ****************************");
+            auto_complete_graph::GraphMapLocalizationMsg graphmaplocalizationmsg;
             graphmaplocalizationmsg.graph_map = graphmapmsg;
             acg_localization->toMessage(graphmaplocalizationmsg);
             graphmap_localization_pub.publish(graphmaplocalizationmsg);
             // Export all localization information.
         } else {
-            ROS_DEBUG(
-                "*************************** > Mock Localization < "
-                "****************************");
-
-            auto_complete_graph::GraphMapLocalizationMsg
-                graphmaplocalizationmsg;
+            ROS_DEBUG("*************************** > Mock Localization < ****************************");
+            auto_complete_graph::GraphMapLocalizationMsg graphmaplocalizationmsg;
             graphmaplocalizationmsg.graph_map = graphmapmsg;
-            mockLocalizationMessage(graphmaplocalizationmsg,
-                                    fuser_->GetGraph()->GetNodes().size());
+            mockLocalizationMessage(graphmaplocalizationmsg, fuser_->GetGraph()->GetNodes().size());
             graphmap_localization_pub.publish(graphmaplocalizationmsg);
-
-            //					 bool unstop = true;
-            //					 while(nb_of_node_new >= 6 &&
-            //unstop){ 						 std::cout << "Keep publishing ? " << std::endl; 						 std::cin
-            //>> unstop;
-            //						 graphmap_localization_pub.publish(graphmaplocalizationmsg);
-            //
-            //					 }
         }
 
         graphmap_pub_.publish(graphmapmsg);
         ROS_INFO("Published the graph msg");
-        // 			std::cout << "PUBLISHED" << std::endl;
-        // 		exit(0);
     }
 
-    geometry_msgs::PoseArray ParticlesToMsg(
-        std::vector<perception_oru::particle,
-                    Eigen::aligned_allocator<perception_oru::particle>>
-            particles) {
+    geometry_msgs::PoseArray ParticlesToMsg( std::vector<perception_oru::particle,
+                                             Eigen::aligned_allocator<perception_oru::particle>>
+                                             particles) {
         // ROS_DEBUG("publishing particles");
         geometry_msgs::PoseArray ret;
         for (int i = 0; i < particles.size(); i++) {
@@ -767,20 +662,14 @@ class GraphMapFuserNode {
 
         AASS::acg::ACGMCLLocalization* pMCL = new AASS::acg::ACGMCLLocalization(
             map, numPart, true, forceSIR, 0, SIRCount);
-        acg_localization =
-            boost::shared_ptr<AASS::acg::ACGMCLLocalization>(pMCL);
+        acg_localization = boost::shared_ptr<AASS::acg::ACGMCLLocalization>(pMCL);
 
         acg_localization->init(xx, yy, yaw, initVar, cov_x_mcl, cov_y_mcl,
-                               cov_yaw_mcl, scale_gaussian_mcl, numPart,
-                               forceSIR);
-
+                               cov_yaw_mcl, scale_gaussian_mcl, numPart, forceSIR);
         acg_localization->setVarNewParticle(var_part);
-
         acg_localization->useEuclideanDistance(_use_euclidean_mcl);
-        acg_localization->setCellNeighborToConsiderInMeters(
-            _cell_neighborhood_size_mcl_in_meters);
-        acg_localization->useEuclideanForLongDistances(
-            _use_euclidean_for_long_distances);
+        acg_localization->setCellNeighborToConsiderInMeters(_cell_neighborhood_size_mcl_in_meters);
+        acg_localization->useEuclideanForLongDistances(_use_euclidean_for_long_distances);
         acg_localization->useHybridStrategy(_use_hybrid_strategy_mcl);
         acg_localization->useMeanOfAllScores(_use_mean_score_mcl);
 
@@ -834,9 +723,7 @@ class GraphMapFuserNode {
             auto sensorpose = Eigen::Affine3d::Identity();
             Eigen::Matrix3d cov;
             Eigen::Vector3d mean;
-
-            std::tie(mean, cov) = acg_localization->localization(
-                Tmotion, cloud, sensorpose, fraction, cutoff);
+            std::tie(mean, cov) = acg_localization->localization(Tmotion, cloud, sensorpose, fraction, cutoff);
 
             pcl::PointCloud<pcl::PointXYZ> transformed_cloud;
             pcl::transformPointCloud(cloud, transformed_cloud, sensorpose);
@@ -862,8 +749,7 @@ class GraphMapFuserNode {
             pcloudmsg.header.stamp = ros::Time::now();
             laser_point_cloud_pub_.publish(pcloudmsg);
 
-            particlePub_.publish(
-                ParticlesToMsg(acg_localization->particleCloud));
+            particlePub_.publish(ParticlesToMsg(acg_localization->particleCloud));
 
             return std::make_tuple(mean, cov);
         } else {
@@ -977,139 +863,95 @@ class GraphMapFuserNode {
         }
     }
 
-    void processFrame(pcl::PointCloud<pcl::PointXYZ>& cloud,
-                      Eigen::Affine3d Tmotion,
-                      const ros::Time& time = ros::Time::now()) {
-        std::cout << "Time : " << time.toSec() << " or " << time.sec << " "
-                  << time.nsec << std::endl;
-
+    void processFrame(pcl::PointCloud<pcl::PointXYZ>& cloud, Eigen::Affine3d Tmotion, const ros::Time& time = ros::Time::now()) {
         Eigen::Vector3d mcl_mean;
         Eigen::Matrix3d mcl_cov;
         if (use_mcl_ && mcl_loaded_) {
             if (!use_graph_map_registration_) {
                 frame_nr_++;
             }
+            // TODO: what does the code do?
             std::tie(mcl_mean, mcl_cov) = localization(Tmotion, cloud);
         }
-
-        if (use_graph_map_registration_ == true) {
-            if (!use_mcl_ || (use_mcl_ && mcl_loaded_)) {
-                if (init_pose_tf_ == true && init_fuser_ == false) {
-                    ROS_DEBUG("INIT FROM TF");
-                    pose_ = getPose(world_link_id, robot_frame);
-                    // sensorPose_ = getPose(robot_frame, laser_link_id);
-                    auto sensorPose_tmp = Eigen::Affine3d::Identity();
-                    assert(fuser_ == NULL);
-                    fuser_ = new GraphMapFuser(map_type_name, reg_type_name,
-                                               pose_, sensorPose_tmp);
-                    ROS_DEBUG_STREAM(
-                        "----------------------------FUSER---------------------"
-                        "---");
-                    ROS_DEBUG_STREAM(fuser_->ToString());
-                    fuser_->Visualize(visualize, plot_marker);
-                    fuser_->SetFuserOptions(false);
-                    ROS_DEBUG_STREAM(
-                        "------------------------------------------------------"
-                        "---");
-                    initPoseSet = true;
-                    init_fuser_ = true;
-
-                    times.push_back(
-                        std::pair<uint32_t, uint32_t>(time.sec, time.nsec));
-                }
-
-                if (!initPoseSet)
-                    return;
-
-                frame_nr_++;
-                if ((Tmotion.translation().norm() < 0.005 &&
-                     Tmotion.rotation().eulerAngles(0, 1, 2).norm() < 0.005) &&
-                    useOdometry) {  // sanity check for odometry
-                                    //        return;
-                }
-                (void)ResetInvalidMotion(Tmotion);
-
-                ROS_DEBUG_STREAM("Last pose "
-                                 << fuser_->GetPoseLastFuse().matrix()
-                                 << std::endl);
-                ROS_DEBUG_STREAM("From this "
-                                 << fuser_->GetPoseLastFuse().inverse().matrix()
-                                 << " * " << pose_.matrix());
-
-                ROS_DEBUG_STREAM(
-                    "frame=" << frame_nr_ << "movement="
-                             << (fuser_->GetPoseLastFuse().inverse() * pose_)
-                                    .translation()
-                                    .norm());
-
-                auto nb_of_node = fuser_->GetGraph()->GetNodes().size();
-
-                ros::Time tplot = ros::Time::now();
-                plotPointcloud2(cloud, tplot);
-                m.lock();
-                fuser_->ProcessFrame<pcl::PointXYZ>(cloud, pose_, Tmotion);
-                m.unlock();
-                tf::Transform Transform;
-                tf::transformEigenToTF(pose_, Transform);
-
-                tf_.sendTransform(tf::StampedTransform(
-                    Transform, time, world_link_id, fuser_base_link_id));
-
-                fuser_odom.header.stamp = time;
-
-                tf::poseEigenToMsg(pose_, fuser_odom.pose.pose);
-                fuser_odom_publisher_.publish(fuser_odom);
-
-                // Publish transform from map to world.
-                auto robot_pose = getPose(world_link_id, robot_frame, time);
-                Eigen::Affine3d map_to_world = pose_ * robot_pose.inverse();
-
-                tf::transformEigenToTF(map_to_world, Transform_map);
-                tf_.sendTransform(tf::StampedTransform(
-                    Transform_map, time, map_link_id, world_link_id));
-
-                publishMapTransform(time);
-
-                auto nb_of_node_new = fuser_->GetGraph()->GetNodes().size();
-                for (int i = 0; i < nb_of_node_new; ++i) {
-                    ROS_DEBUG_STREAM(
-                        "Well " << nb_of_node << " != " << nb_of_node_new
-                                << " and id "
-                                << fuser_->GetGraph()->GetNodes()[i]->GetId());
-                }
-
-                if (use_mcl_ && mcl_loaded_) {
-                    // If a new node was added, we save the location.
-                    if (acg_localization->getLocalizations().size() !=
-                        nb_of_node_new) {
-                        ROS_DEBUG_STREAM(" saving pose ");
-                        acg_localization->savePos(nb_of_node_new - 1);
-
-                        // Taking current cov for precedent node
-                        if (acg_localization->getLocalizations().size() >= 2) {
-                            acg_localization->saveCov(nb_of_node_new - 2);
-                        }
-
-                        assert(acg_localization->getLocalizations().size() ==
-                               nb_of_node_new);
-                    }
-                    assert(acg_localization->getLocalizations().size() ==
-                           nb_of_node_new);
-                }
-
-                if (nb_of_node != nb_of_node_new) {
-                    times.push_back(
-                        std::pair<uint32_t, uint32_t>(time.sec, time.nsec));
-                    std_msgs::Bool::Ptr bool_msg;
-                    pubGraphMap(bool_msg);
-                }
-            } else {
-                ROS_DEBUG_STREAM(
-                    "NDT MCL needs to be init for the registration to start if "
-                    "you want to use both MCL and registration");
-                ROS_DEBUG_STREAM("use_mcl : " << use_mcl_ << ", mcl_loaded "
-                                              << mcl_loaded_);
+        // By default, use graph_map to registration
+        if (!use_mcl_ || (use_mcl_ && mcl_loaded_)) {
+            if (init_pose_tf_ == true && init_fuser_ == false) {
+                ROS_INFO_STREAM("Initializing fuser");
+                pose_ = getPose(world_link_id, robot_frame);
+                auto sensor_pose_tmp = Eigen::Affine3d::Identity();
+                assert(fuser_ == NULL);
+                fuser_ = new GraphMapFuser(map_type_name, reg_type_name, pose_, sensor_pose_tmp);
+                ROS_INFO_STREAM("----------------------------FUSER------------------------");
+                ROS_INFO_STREAM(fuser_->ToString());
+                fuser_->Visualize(visualize, plot_marker);
+                fuser_->SetFuserOptions(false);
+                ROS_INFO_STREAM("----------------------------FUSER------------------------");
+                initPoseSet = true;
+                init_fuser_ = true;
+                times.push_back(std::pair<uint32_t, uint32_t>(time.sec, time.nsec));
             }
+
+            if (!initPoseSet) return;
+
+            frame_nr_++;
+            if ((Tmotion.translation().norm() < 0.005 && Tmotion.rotation().eulerAngles(0, 1, 2).norm() < 0.005) && useOdometry) {  // sanity check for odometry
+                                //        return;
+            }
+            (void)ResetInvalidMotion(Tmotion);
+
+            ROS_DEBUG_STREAM("Last pose " << fuser_->GetPoseLastFuse().matrix() << std::endl);
+            ROS_DEBUG_STREAM("From this " << fuser_->GetPoseLastFuse().inverse().matrix() << " * " << pose_.matrix());
+            ROS_DEBUG_STREAM("frame=" << frame_nr_ << "movement=" << (fuser_->GetPoseLastFuse().inverse() * pose_).translation().norm());
+
+            auto nb_of_node = fuser_->GetGraph()->GetNodes().size();
+
+            auto predicted_pose = pose_ * Tmotion;
+            m.lock();
+            bool fuse_flag = fuser_->ProcessFrame<pcl::PointXYZ>(cloud, pose_, Tmotion);
+            m.unlock();
+            dumpFuseInfoOfTheFrame(fuse_flag, predicted_pose, pose_, frame_nr_);
+            sendPoseBetweenTwoLinks(pose_, time, world_link_id, fuser_base_link_id);
+            publishOdomMsg(fuser_odom_publisher_, fuser_odom, pose_, time);
+
+            // Publish transform from map to world.
+            // TODO: what does the following code do?
+            auto robot_pose = getPose(world_link_id, robot_frame, time);
+            Eigen::Affine3d map_to_world = pose_ * robot_pose.inverse();
+            tf::transformEigenToTF(map_to_world, Transform_map);
+            tf_.sendTransform(tf::StampedTransform(Transform_map, time, map_link_id, world_link_id));
+            publishMapTransform(time);
+            // TODO: similarly, I have not fully understood the following code.
+            auto nb_of_node_new = fuser_->GetGraph()->GetNodes().size();
+            for (int i = 0; i < nb_of_node_new; ++i) {
+                ROS_DEBUG_STREAM("Well " << nb_of_node << " != " << nb_of_node_new << " and id " << fuser_->GetGraph()->GetNodes()[i]->GetId());
+            }
+
+            if (use_mcl_ && mcl_loaded_) {
+                // If a new node was added, we save the location.
+                if (acg_localization->getLocalizations().size() != nb_of_node_new) {
+                    ROS_DEBUG_STREAM(" saving pose ");
+                    acg_localization->savePos(nb_of_node_new - 1);
+
+                    // Taking current cov for precedent node
+                    if (acg_localization->getLocalizations().size() >= 2) {
+                        acg_localization->saveCov(nb_of_node_new - 2);
+                    }
+
+                    assert(acg_localization->getLocalizations().size() == nb_of_node_new);
+                }
+                assert(acg_localization->getLocalizations().size() == nb_of_node_new);
+            }
+
+            if (nb_of_node != nb_of_node_new) {
+                times.push_back(std::pair<uint32_t, uint32_t>(time.sec, time.nsec));
+                std_msgs::Bool::Ptr bool_msg;
+                pubGraphMap(bool_msg);
+            }
+        } else {
+            ROS_DEBUG_STREAM(
+                "NDT MCL needs to be init for the registration to start if "
+                "you want to use both MCL and registration");
+            ROS_DEBUG_STREAM("use_mcl : " << use_mcl_ << ", mcl_loaded " << mcl_loaded_);
         }
     }
 
@@ -1124,42 +966,42 @@ class GraphMapFuserNode {
         }
     }
 
-    // bool save_map_callback(std_srvs::Empty::Request
-    // &req,std_srvs::Empty::Response &res )
     bool ResetInvalidMotion(Eigen::Affine3d& Tmotion) {
         if (Tmotion.translation().norm() > MAX_TRANSLATION_DELTA) {
             std::cerr << "Ignoring Odometry (max transl)!\n";
             std::cerr << Tmotion.translation().transpose() << std::endl;
             Tmotion.setIdentity();
             return true;
-        } else if (Tmotion.rotation().eulerAngles(0, 1, 2)(2) >
-                   MAX_ROTATION_DELTA) {
+        } else if (Tmotion.rotation().eulerAngles(0, 1, 2)(2) > MAX_ROTATION_DELTA) {
             std::cerr << "Ignoring Odometry (max rot)!\n";
-            std::cerr << Tmotion.rotation().eulerAngles(0, 1, 2).transpose()
-                      << std::endl;
+            std::cerr << Tmotion.rotation().eulerAngles(0, 1, 2).transpose() << std::endl;
             Tmotion.setIdentity();
             return true;
         } else
             return false;
     }
-    bool save_map_callback(std_srvs::Empty::Request& req,
-                           std_srvs::Empty::Response& res) {
+
+    bool save_map_callback(std_srvs::Empty::Request& req, std_srvs::Empty::Response& res) {
+        std::cout << "Request to save map" << std::endl;
         char path[1000];
         string time = ndt_generic::currentDateTimeString();
+        snprintf(path, 999, "%s/%s_.MAP", map_dir.c_str(), time.c_str());
 
         if (fuser_ != NULL) {
-            snprintf(path, 999, "%s/%s_.MAP", map_dir.c_str(), time.c_str());
             m.lock();
-            if (file_format_map.compare(".JFF") == 0)
+            if (file_format_map.compare(".JFF") == 0) {
                 fuser_->SaveCurrentNodeAsJFF(path);
-            else
+            } else {
                 fuser_->SaveGraphMap(path);
-
+            }
             m.unlock();
-            ROS_DEBUG("Current map was saved to path= %s", path);
+            ROS_INFO("Current map was saved to path= %s", path);
             return true;
-        } else
-            ROS_DEBUG("No data to save");
+        } else {
+            // Write a blank file to indicate that the map was not saved.
+            FILE* f = fopen(path, "w"); fclose(f);
+            ROS_INFO("No data to save");
+        }
         return false;
     }
 
@@ -1171,8 +1013,7 @@ class GraphMapFuserNode {
         tf::StampedTransform transform;
         tf_listener_.waitForTransform(world_link_id, link_id, time, wait);
         try {
-            tf_listener_.lookupTransform(world_link_id, link_id, time,
-                                         transform);
+            tf_listener_.lookupTransform(world_link_id, link_id, time, transform);
             tf::poseTFToEigen(transform, ret);
             ROS_DEBUG_STREAM("found " << ret.translation().transpose());
         } catch (tf::TransformException ex) {
@@ -1206,9 +1047,9 @@ class GraphMapFuserNode {
     }
 
     // Callback
-    void laserOdomCallback(const sensor_msgs::LaserScan::ConstPtr& msg_in,
-                           const nav_msgs::Odometry::ConstPtr& odo_in) {
-        ROS_INFO_STREAM("node: laser odom call back");
+    void laserOdomCallback(const sensor_msgs::LaserScan::ConstPtr& msg_in, const nav_msgs::Odometry::ConstPtr& odo_in) {
+        // display the time of the laser scan
+        ROS_DEBUG_STREAM("Laser scan received at " << msg_in->header.stamp << " odom at " << odo_in->header.stamp);
         sensor_msgs::PointCloud2 cloud;
         pcl::PointCloud<pcl::PointXYZ> pcl_cloud, pcl_cloud_unfiltered;
         Eigen::Affine3d Tm;
@@ -1219,16 +1060,15 @@ class GraphMapFuserNode {
             Tm.setIdentity();
         } else {
             Tm = last_odom.inverse() * this_odom;
-            ROS_DEBUG_STREAM("new Tmotion: " << frame_nr_ << "\n"
-                                             << Tm.matrix());
+            ROS_DEBUG_STREAM("new Tmotion: " << frame_nr_ << "\n" << Tm.matrix());
         }
 
         last_odom = this_odom;
         projector_.projectLaser(*msg_in, cloud);
         pcl::fromROSMsg(cloud, pcl_cloud_unfiltered);
         sensor_msgs::LaserScan msg_out = *msg_in;
-        msg_out.header.stamp = ros::Time::now();
-        msg_out.header.frame_id = "/fuser_laser_link";
+        msg_out.header.stamp = msg_in->header.stamp;
+        msg_out.header.frame_id = fuser_base_link_id;
         laser_publisher_.publish(msg_out);
         pcl::PointXYZ pt;
 
@@ -1259,23 +1099,18 @@ class GraphMapFuserNode {
                                  odo_in)  // callback is used in conjunction
                                           // with odometry time filter.
     {
+        std::cout << "[Debug] points2OdomCallback" << std::endl;
         ros::Time tstart = ros::Time::now();
-
         tf::poseMsgToEigen(odo_in->pose.pose, this_odom);
-
         Eigen::Affine3d Tm;
         pcl::PointCloud<pcl::PointXYZ> cloud;
-
-        if (frame_nr_ == 0)
-            Tm.setIdentity();
-        else {
-            Tm = last_odom.inverse() * this_odom;
-        }
+        Tm = (frame_nr_ == 0) ? Eigen::Affine3d::Identity() : last_odom.inverse() * this_odom;
         last_odom = this_odom;
         pcl::fromROSMsg(*msg_in, cloud);
         this->processFrame(cloud, Tm, msg_in->header.stamp);
         ros::Time tend = ros::Time::now();
     }
+
     void points2OdomCallbackTF(
         const sensor_msgs::PointCloud2::ConstPtr&
             msg_in) {
@@ -1326,18 +1161,13 @@ class GraphMapFuserNode {
         fuser_->ProcessFrame(cloud, pose_, Tmotion);
         m.unlock();
     }
-    void GTLaserPointsOdomCallbackTF(
-        const sensor_msgs::PointCloud2::ConstPtr&
-            msg_in)  // this callback is used for GT based mapping with TF
-                     // lookup
-    {
-        //    cout<<"GT-TF toffset:"<<sensor_offset_t_<<endl;
+
+    // this callback is used for GT based mapping with TF
+    void GTLaserPointsOdomCallbackTF(const sensor_msgs::PointCloud2::ConstPtr& msg_in) {
         Eigen::Affine3d tmp_pose;
         Eigen::Affine3d Tmotion = Eigen::Affine3d::Identity();
-        bool found_odom = getAffine3dTransformFromTF(
-            (msg_in->header.stamp - ros::Duration(sensor_offset_t_)),
-            state_base_link_id, tmp_pose, ros::Duration(0.1));
-
+        bool found_odom = getAffine3dTransformFromTF((msg_in->header.stamp - ros::Duration(sensor_offset_t_)),
+                                                     state_base_link_id, tmp_pose, ros::Duration(0.1));
         if (found_odom) {
             pose_ = tmp_pose;
             pcl::PointCloud<pcl::PointXYZ> cloud;
@@ -1345,23 +1175,16 @@ class GraphMapFuserNode {
             ros::Time t_stamp = ros::Time::now();  // msg_in->header.stamp;
             tf::Transform tf_gt_base;
             tf::poseEigenToTF(pose_, tf_gt_base);
-            tf_.sendTransform(tf::StampedTransform(
-                tf_gt_base, t_stamp, world_link_id,
-                std::string("online_") + state_base_link_id));
-            tf_.sendTransform(tf::StampedTransform(
-                tf_sensor_pose_, t_stamp,
-                std::string("online_") + state_base_link_id, laser_link_id));
+            tf_.sendTransform(tf::StampedTransform(tf_gt_base, t_stamp, world_link_id, std::string("online_") + state_base_link_id));
+            tf_.sendTransform(tf::StampedTransform(tf_sensor_pose_, t_stamp, std::string("online_") + state_base_link_id, laser_link_id));
             plotPointcloud2(cloud, t_stamp);
             fuser_->ProcessFrame(cloud, pose_, Tmotion);
             m.unlock();
         }
     }
     // Callback
-    void gt_callback(
-        const nav_msgs::Odometry::ConstPtr&
-            msg_in)  // This callback is used to set initial pose from GT data.
-    {
-        // cout<<"gt callback"<<endl;
+    // This callback is used to set initial pose from GT data.
+    void gt_callback(const nav_msgs::Odometry::ConstPtr& msg_in) {
         exit(0);
         Eigen::Affine3d gt_pose;
         tf::poseMsgToEigen(msg_in->pose.pose, gt_pose);
@@ -1369,14 +1192,11 @@ class GraphMapFuserNode {
         if (initPoseFromGT && !initPoseSet) {
             pose_ = gt_pose;
             ROS_DEBUG("Set initial pose from GT track");
-            fuser_ = new GraphMapFuser(map_type_name, reg_type_name, pose_,
-                                       sensorPose_);
-            cout << "----------------------------FUSER------------------------"
-                 << endl;
+            fuser_ = new GraphMapFuser(map_type_name, reg_type_name, pose_, sensorPose_);
+            cout << "----------------------------FUSER------------------------" << endl;
             cout << fuser_->ToString() << endl;
             fuser_->Visualize(visualize, plot_marker);
-            cout << "---------------------------------------------------------"
-                 << endl;
+            cout << "---------------------------------------------------------" << endl;
             initPoseSet = true;
         }
     }

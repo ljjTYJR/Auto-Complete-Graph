@@ -82,11 +82,8 @@ class OptimizableAutoCompleteGraph : public g2o::SparseOptimizer {
     ///@brief Set Marginalized to false and do initializeOptimization
     void prepare() {
         // Prepare when changing kernels
-        for (SparseOptimizer::VertexIDMap::const_iterator it =
-                 vertices().begin();
-             it != vertices().end(); ++it) {
-            OptimizableGraph::Vertex* v =
-                static_cast<OptimizableGraph::Vertex*>(it->second);
+        for (SparseOptimizer::VertexIDMap::const_iterator it = vertices().begin(); it != vertices().end(); ++it) {
+            OptimizableGraph::Vertex* v = static_cast<OptimizableGraph::Vertex*>(it->second);
             v->setMarginalized(false);
         }
         initializeOptimization();

@@ -19,6 +19,7 @@
 
 #include <pcl_conversions/pcl_conversions.h>
 #include <ros/package.h>
+#include <std_srvs/Empty.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
@@ -558,17 +559,16 @@ inline double getTime()  // in millisecond
     return (tv.tv_sec * 1000000 + tv.tv_usec) * 1.0 / 1000;
 }
 
-inline void printImages(AASS::acg::AutoCompleteGraphLocalization* oacg) {
+inline void printImages(const std_msgs::Bool::ConstPtr msg, AASS::acg::AutoCompleteGraphLocalization* oacg) {
+    ROS_INFO("Get the message, print the images");
     nav_msgs::OccupancyGrid* omap_tmpt = new nav_msgs::OccupancyGrid();
     nav_msgs::OccupancyGrid::Ptr occ_outt(omap_tmpt);
     AASS::acg::ACGtoOccupancyGrid(*oacg, occ_outt);
     grid_map::GridMap gridMap({"all"});
     grid_map::GridMapRosConverter::fromOccupancyGrid(*occ_outt, "all", gridMap);
     cv::Mat originalImageP;
-    grid_map::GridMapCvConverter::toImage<unsigned short, 1>(
-        gridMap, "all", CV_16UC1, 0.0, 1, originalImageP);
-    std::string file_outg =
-        "/home/ros/catkin_ws/src/darko/Auto-Complete-Graph/result_fig/full_";
+    grid_map::GridMapCvConverter::toImage<unsigned short, 1>(gridMap, "all", CV_16UC1, 0.0, 1, originalImageP);
+    std::string file_outg = "/home/ros/catkin_ws/src/darko/Auto-Complete-Graph/result_fig/full_";
     std::ostringstream convert;  // stream used for the conversion
     convert << oacg->getRobotNodes().size();
 
@@ -583,16 +583,12 @@ inline void printImages(AASS::acg::AutoCompleteGraphLocalization* oacg) {
 
     nav_msgs::OccupancyGrid* omap_tmpt_partial = new nav_msgs::OccupancyGrid();
     nav_msgs::OccupancyGrid::Ptr occ_outt_partial(omap_tmpt_partial);
-    AASS::acg::ACGtoOccupancyGrid(*oacg, occ_outt_partial,
-                                  oacg->getRobotNodes().size() - 1);
+    AASS::acg::ACGtoOccupancyGrid(*oacg, occ_outt_partial, oacg->getRobotNodes().size() - 1);
     grid_map::GridMap gridMap_partial({"all"});
-    grid_map::GridMapRosConverter::fromOccupancyGrid(*occ_outt_partial, "all",
-                                                     gridMap_partial);
+    grid_map::GridMapRosConverter::fromOccupancyGrid(*occ_outt_partial, "all", gridMap_partial);
     cv::Mat originalImageP_partial;
-    grid_map::GridMapCvConverter::toImage<unsigned short, 1>(
-        gridMap_partial, "all", CV_16UC1, 0.0, 1, originalImageP_partial);
-    std::string file_outg_partial =
-        "/home/ros/catkin_ws/src/darko/Auto-Complete-Graph/result_fig/partial_";
+    grid_map::GridMapCvConverter::toImage<unsigned short, 1>(gridMap_partial, "all", CV_16UC1, 0.0, 1, originalImageP_partial);
+    std::string file_outg_partial = "/home/ros/catkin_ws/src/darko/Auto-Complete-Graph/result_fig/partial_";
     std::ostringstream convertg_partial;  // stream used for the conversion
     convertg_partial << oacg->getRobotNodes().size();
     file_outg_partial = file_outg_partial + convert.str();
@@ -615,14 +611,13 @@ void gotGraphandOptimize(
     const auto_complete_graph::GraphMapLocalizationMsg::ConstPtr msg,
     AASS::acg::AutoCompleteGraphLocalization* oacg,
     AASS::acg::VisuAutoCompleteGraphLocalization& visu) {
+
+    std::cout << "[Debug] Get the new graph message and update the graph" << std::endl;
     times_of_nodes.clear();
 
     for (auto node : msg->graph_map.nodes) {
-        std::cout << "TIME : " << std::fixed << std::setprecision(8)
-                  << (double)node.time_sec.data << " "
-                  << (double)node.time_nsec.data << std::endl;
-        times_of_nodes.push_back(std::pair<uint32_t, uint32_t>(
-            node.time_sec.data, node.time_nsec.data));
+        std::cout << "TIME : " << std::fixed << std::setprecision(8) << (double)node.time_sec.data << " " << (double)node.time_nsec.data << std::endl;
+        times_of_nodes.push_back(std::pair<uint32_t, uint32_t>(node.time_sec.data, node.time_nsec.data));
     }
 
     updated = true;
@@ -648,57 +643,53 @@ void gotGraphandOptimize(
     }
         /* The commented code is used to optimize the graph */
     // Prepare the graph : marginalize + initializeOpti
-    // std::pair<int, int> iterations;
-    // ros::Time start_opti = ros::Time::now();
-    // bool optiquest = true;
-    // if (testing_pause) {
-    //     std::cout << "Optimize ?" << std::endl;
-    //     std::cin >> optiquest;
-    // }
-    // if (/*oacg->checkAbleToOptimize() &&*/ optiquest) {
-    //     oacg->setFirst();
-    //     oacg->prepare();
-    //     std::cout << "ITERATIO COUNT " << max_iteration << std::endl;
-    //     iterations = oacg->optimize(max_iteration);
-    // } else {
-    //     oacg->testInfoNonNul("Just making sure");
-    // }
-    // ros::Time end_opti = ros::Time::now();
-    // std::cout << "Start opti time " << start_opti.toSec() << " "
-    //         << end_opti.toSec() << std::endl;
-    // std::cout << "Start opti time " << start_opti.toNSec() << " "
-    //         << end_opti.toNSec() << std::endl;
-    // double opti = (end_opti - start_opti).toSec();
-    // time_opti.push_back(opti);
+    std::pair<int, int> iterations;
+    ros::Time start_opti = ros::Time::now();
+    bool optiquest = true;
+    if (testing_pause) {
+        std::cout << "Optimize ?" << std::endl;
+        std::cin >> optiquest;
+    }
+    if (/*oacg->checkAbleToOptimize() &&*/ optiquest) {
+        oacg->setFirst();
+        oacg->prepare();
+        std::cout << "ITERATIO COUNT " << max_iteration << std::endl;
+        iterations = oacg->optimize(max_iteration);
+    } else {
+        oacg->testInfoNonNul("Just making sure");
+    }
+    ros::Time end_opti = ros::Time::now();
+    std::cout << "Start opti time " << start_opti.toSec() << " " << end_opti.toSec() << std::endl;
+    std::cout << "Start opti time " << start_opti.toNSec() << " " << end_opti.toNSec() << std::endl;
+    double opti = (end_opti - start_opti).toSec();
+    time_opti.push_back(opti);
 
-    // if (optimize_prior == true) {
-    //     ROS_DEBUG("Publishing the new prior ndt map");
-    //     publishACGOM(*oacg);
-    // }
+    if (optimize_prior == true) {
+        ROS_DEBUG("Publishing the new prior ndt map");
+        publishACGOM(*oacg);
+    }
 
     ROS_DEBUG("RVIZ ");
     visu.updateRviz(*oacg);
     publishACGOM(*oacg);
     ROS_DEBUG("RVIZ DONE");
 
-    // if (testing_pause) {
-    //     std::cout << "Result of optimization. Enter a number to continue"
-    //               << std::endl;
-    //     int aaa;
-    //     std::cin >> aaa;
-    // }
+    if (testing_pause) {
+        std::cout << "Result of optimization. Enter a number to continue" << std::endl;
+        int aaa;
+        std::cin >> aaa;
+    }
 
-    // if (export_iteration_count == true && optiquest) {
-    //     bool done =
-    //         exportIterationCOunt(*oacg, iterations, corner_extract_tt, opti);
-    // }
+    if (export_iteration_count == true && optiquest) {
+        bool done = exportIterationCOunt(*oacg, iterations, corner_extract_tt, opti);
+    }
 
-    // timef = ros::Time::now();
-    // all_node_times.push_back((timef - start).toSec());
+    timef = ros::Time::now();
+    all_node_times.push_back((timef - start).toSec());
 
-    // if (optiquest && add_noise_odometry) {
-    //     exportErrorNoiseOdometry(*oacg);
-    // }
+    if (optiquest && add_noise_odometry) {
+        exportErrorNoiseOdometry(*oacg);
+    }
 
     // convert the acg to occupancy grid map
     ROS_INFO("Publishing the occupancy grid map");
@@ -752,8 +743,8 @@ void initAll(AASS::acg::AutoCompleteGraphLocalization& oacg,
 int main(int argc, char** argv) {
     ros::init(argc, argv, "auto_complete_graph_rviz_small_optimi");
     ros::Subscriber ndt_graph_sub;
-    ros::Subscriber call_for_publish_occ, publish_prior_ndt,
-        publish_acg_om_maps, gt_odom;
+    ros::Subscriber call_for_publish_occ, publish_prior_ndt, publish_acg_om_maps, gt_odom;
+    ros::Subscriber acg_image_save_sub;
     ros::NodeHandle nh("~");
 
     /**************PARAMETERS**************/
@@ -791,9 +782,7 @@ int main(int argc, char** argv) {
                      threshold_score_link_creation, 0.5);
     if (threshold_score_link_creation > 1 ||
         threshold_score_link_creation < 0) {
-        std::cout << "threshold_score_link_creation needs to be between 0 and "
-                     "1. Fix it"
-                  << std::endl;
+        std::cout << "threshold_score_link_creation needs to be between 0 and 1. Fix it" << std::endl;
         return 0;
     }
     nh.param<std::string>("world_frame", world_frame, "/world");
@@ -811,11 +800,9 @@ int main(int argc, char** argv) {
     double min_val_cov = 0.1;
     nh.param<double>("min_val_cov_ndt_cell", min_val_cov, 0.1);
     double min_corner_ndt_cell_distance = 1;
-    nh.param<double>("min_corner_ndt_cell_distance",
-                     min_corner_ndt_cell_distance, 1);
+    nh.param<double>("min_corner_ndt_cell_distance", min_corner_ndt_cell_distance, 1);
     double max_distance_ndt_cell_from_robot_pose = -1;
-    nh.param<double>("max_distance_ndt_cell_from_robot_pose",
-                     max_distance_ndt_cell_from_robot_pose, -1);
+    nh.param<double>("max_distance_ndt_cell_from_robot_pose", max_distance_ndt_cell_from_robot_pose, -1);
     bool use_huber_kernel;
     nh.param("use_huber_kernel", use_huber_kernel, true);
     bool use_dcs_kernel;
@@ -829,8 +816,7 @@ int main(int argc, char** argv) {
     bool use_user_cov_odometry;
     nh.param("use_user_cov_odometry", use_user_cov_odometry, false);
     double error_under_witch_stop_optimization = 1;
-    nh.param<double>("error_under_witch_stop_optimization",
-                     error_under_witch_stop_optimization, 1);
+    nh.param<double>("error_under_witch_stop_optimization", error_under_witch_stop_optimization, 1);
     double landmark_noise_x = 0.05;
     nh.param<double>("landmark_noise_x", landmark_noise_x, 0.05);
     double landmark_noise_y = 0.05;
@@ -844,14 +830,11 @@ int main(int argc, char** argv) {
     nh.param<double>("noise_odom_percentage", noise_odom_perc, 0.1);
 
     double max_deviation_corner_in_prior = 1;
-    nh.param<double>("max_deviation_corner_in_prior",
-                     max_deviation_corner_in_prior, 45 * 3.14159 / 180);
+    nh.param<double>("max_deviation_corner_in_prior", max_deviation_corner_in_prior, 45 * 3.14159 / 180);
 
     std::string prior_file = "";
-    nh.param<std::string>(
-        "prior_file", prior_file,
-        "/home/malcolm/ros_catkin_ws/lunar_ws/src/auto_complete_graph/tests/"
-        "emergbasement_flipped_nodoor.png");
+    nh.param<std::string>("prior_file", prior_file, "/home/malcolm/ros_catkin_ws/lunar_ws/src/auto_complete_graph/tests/"
+                          "emergbasement_flipped_nodoor.png");
 
     nh.param<double>("gaussian_scaling_occ", scaling_gaussian_occ_map, 0.5);
     nh.param<double>("occupancy_grid_resolution", occupancy_grid_resolution,
@@ -894,13 +877,11 @@ int main(int argc, char** argv) {
     oacg.useHuberKernel(use_huber_kernel);
     oacg.useDCSKernel(use_dcs_kernel);
     oacg.useRobustKernel(use_robust_kernel);
-    oacg.getPrior()->setPriorNoise(main_axis_prior_noise,
-                                   other_axis_prior_noise);
+    oacg.getPrior()->setPriorNoise(main_axis_prior_noise, other_axis_prior_noise);
     oacg.useUserCovForRobotPose(use_user_cov_odometry);
     oacg.setLandmarkNoise(landmark_noise_x, landmark_noise_y);
     oacg.setPercentageNoiseOdometry(noise_odom_perc);
-    oacg.errorUnderWhichWeStopTheOptimization(
-        error_under_witch_stop_optimization);
+    oacg.errorUnderWhichWeStopTheOptimization(error_under_witch_stop_optimization);
 
     oacg.setScalingFactorOfGaussians(gaussian_scale);
     oacg.setThrehsoldOfScoreForCreatingLink(threshold_score_link_creation);
@@ -923,41 +904,31 @@ int main(int argc, char** argv) {
     std::string path_images = path_to_acg + "/ACG_folder/Images";
     visu.setImageFileNameOut(path_images);
 
-    ndt_graph_sub = nh.subscribe<auto_complete_graph::GraphMapLocalizationMsg>(
-        "/graph_node/graph_map_localization", 1000,
-        boost::bind(&gotGraphandOptimize, _1, &oacg, visu));
-    call_for_publish_occ = nh.subscribe<std_msgs::Bool>(
-        "/publish_occ_acg", 1, boost::bind(&latchOccGrid, _1, &oacg));
-    publish_prior_ndt = nh.subscribe<std_msgs::Bool>(
-        "/publish_acg_maps", 1,
-        boost::bind(&publishACGOM, _1, boost::ref(oacg)));
-    publish_acg_om_maps = nh.subscribe<std_msgs::Bool>(
-        "/publish_acg_om_maps", 1,
-        boost::bind(&publishACGOM, _1, boost::ref(oacg)));
+    ndt_graph_sub = nh.subscribe<auto_complete_graph::GraphMapLocalizationMsg>("/graph_node/graph_map_localization", 1000,
+                                                                               boost::bind(&gotGraphandOptimize, _1, &oacg, visu));
+    call_for_publish_occ = nh.subscribe<std_msgs::Bool>("/publish_occ_acg", 1, boost::bind(&latchOccGrid, _1, &oacg));
+    publish_prior_ndt = nh.subscribe<std_msgs::Bool>("/publish_acg_maps", 1, boost::bind(&publishACGOM, _1, boost::ref(oacg)));
+    publish_acg_om_maps = nh.subscribe<std_msgs::Bool>("/publish_acg_om_maps", 1, boost::bind(&publishACGOM, _1, boost::ref(oacg)));
+    acg_image_save_sub = nh.subscribe<std_msgs::Bool>("/acg_image_save", 1, boost::bind(&printImages, _1, &oacg));
 
     if (use_gt_for_odom) {
-        gt_odom = nh.subscribe<nav_msgs::Odometry>("/vmc_navserver/state", 100,
-                                                   getGroundTruth);
+        gt_odom = nh.subscribe<nav_msgs::Odometry>("/vmc_navserver/state", 100, getGroundTruth);
     }
 
     map_pub_ = nh.advertise<nav_msgs::OccupancyGrid>("map_grid", 1000);
-    occ_send =
-        nh.advertise<nav_msgs::OccupancyGrid>("/occupancy_map_asif", 10, true);
+    occ_send = nh.advertise<nav_msgs::OccupancyGrid>("/occupancy_map_asif", 10, true);
 
     acg_gdim = nh.advertise<auto_complete_graph::ACGMaps>("acg_maps", 10);
     last_ndtmap = nh.advertise<ndt_map::NDTMapMsg>("lastgraphmap_acg", 10);
-    last_occ_map =
-        nh.advertise<nav_msgs::OccupancyGrid>("occ_lastgraphmap_acg", 10);
+    last_occ_map = nh.advertise<nav_msgs::OccupancyGrid>("occ_lastgraphmap_acg", 10);
     prior_map_grid_map_pub = nh.advertise<grid_map_msgs::GridMap>("prior_map_grid_map", 10);
 
     last_grid_map = nh.advertise<grid_map_msgs::GridMap>("last_grid_map", 10);
     occupancy_grid = nh.advertise<nav_msgs::OccupancyGrid>("occupancy_grid_acg_global", 10);
 
-    last_ndtmap_full =
-        nh.advertise<nav_msgs::OccupancyGrid>("occ_grid_ndt", 10);
+    last_ndtmap_full = nh.advertise<nav_msgs::OccupancyGrid>("occ_grid_ndt", 10);
 
-    prior_cloud =
-        nh.advertise<sensor_msgs::PointCloud2>("prior_point_cloud", 10);
+    prior_cloud = nh.advertise<sensor_msgs::PointCloud2>("prior_point_cloud", 10);
     prior_ndt = nh.advertise<ndt_map::NDTMapMsg>("prior_ndt", 10);
 
     timef = ros::Time::now();
