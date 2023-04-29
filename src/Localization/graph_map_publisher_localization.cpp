@@ -92,6 +92,14 @@ void publishOdomMsg(ros::Publisher& pub, nav_msgs::Odometry& odom_msg, Eigen::Af
     pub.publish(odom_msg);
 }
 
+void publishPointCloudMsg(pcl::PointCloud<pcl::PointXYZ>& cloud, const ros::Time& time, const std::string& frame_id, ros::Publisher& pub) {
+    sensor_msgs::PointCloud2 cloud_msg;
+    pcl::toROSMsg(cloud, cloud_msg);
+    cloud_msg.header.stamp = time;
+    cloud_msg.header.frame_id = frame_id;
+    pub.publish(cloud_msg);
+}
+
 /** \brief A ROS node which implements an NDTFuser or NDTFuserHMT object
  * \author Daniel adolfsson based on code from Todor Stoyanov
  *
@@ -240,7 +248,8 @@ class GraphMapFuserNode {
     ros::Time time_now, time_last_itr;
     ros::Publisher map_publisher_, laser_publisher_, point2_publisher_,
         odom_publisher_, adjusted_odom_publisher_, fuser_odom_publisher_,
-        graph_map_vector_, occupancy_grid_map_publisher_, graph_map_ndt_map_pub_;
+        graph_map_vector_, occupancy_grid_map_publisher_, graph_map_ndt_map_pub_,
+        converted_pointcloud_publisher_;
     nav_msgs::Odometry fuser_odom, adjusted_odom_msg;
     Eigen::Affine3d last_odom, this_odom, last_gt_pose;
 
@@ -403,6 +412,7 @@ public:
         point2_publisher_ = param_nh.advertise<sensor_msgs::PointCloud2>("point2_fuser", 15);
         fuser_odom_publisher_ = param_nh.advertise<nav_msgs::Odometry>("fuser", 50);
         adjusted_odom_publisher_ = param_nh.advertise<nav_msgs::Odometry>("odom_gt_init", 50);
+        converted_pointcloud_publisher_ = param_nh.advertise<sensor_msgs::PointCloud2>("converted_pointcloud", 50);
 
         param_nh.param<double>("fraction", fraction, 1.0);
         param_nh.param<double>("cutoff", cutoff, -10);
@@ -1081,6 +1091,7 @@ public:
             }
         }
         pcl::transformPointCloud(pcl_cloud, pcl_cloud, sensorPose_);
+        publishPointCloudMsg(pcl_cloud, msg_in->header.stamp, fuser_base_link_id, converted_pointcloud_publisher_);
         this->processFrame(pcl_cloud, Tm, msg_in->header.stamp);
         ROS_DEBUG_STREAM("publish fuser data");
     }

@@ -6,13 +6,14 @@ Panels:
       Expanded:
         - /Global Options1
         - /Status1
-        - /TF1
         - /TF1/Frames1
         - /TF1/Tree1
-        - /PointCloud21
         - /PointCloud21/Autocompute Value Bounds1
-        - /LaserScan1
-        - /NDTVectorMap1
+        - /prior_marker1
+        - /ndt_nodes1
+        - /loc_pose1
+        - /LaserScan2
+        - /Map2
       Splitter Ratio: 0.4533030092716217
     Tree Height: 797
   - Class: rviz/Selection
@@ -121,9 +122,9 @@ Visualization Manager:
         lidar_top/os_imu:
           Value: false
         lidar_top/os_lidar:
-          Value: true
-        lidar_top/os_sensor:
           Value: false
+        lidar_top/os_sensor:
+          Value: true
         mcl_tf:
           Value: true
         naos_robot_frame:
@@ -132,10 +133,54 @@ Visualization Manager:
           Value: false
         pose_10:
           Value: false
+        pose_100:
+          Value: true
+        pose_101:
+          Value: true
+        pose_102:
+          Value: true
+        pose_103:
+          Value: true
+        pose_104:
+          Value: true
+        pose_105:
+          Value: true
+        pose_106:
+          Value: true
+        pose_107:
+          Value: true
+        pose_108:
+          Value: true
+        pose_109:
+          Value: true
         pose_11:
           Value: false
+        pose_110:
+          Value: true
+        pose_111:
+          Value: true
+        pose_112:
+          Value: true
+        pose_113:
+          Value: true
+        pose_114:
+          Value: true
+        pose_115:
+          Value: true
+        pose_116:
+          Value: true
+        pose_117:
+          Value: true
+        pose_118:
+          Value: true
+        pose_119:
+          Value: true
         pose_12:
           Value: false
+        pose_120:
+          Value: true
+        pose_121:
+          Value: true
         pose_13:
           Value: false
         pose_14:
@@ -191,47 +236,47 @@ Visualization Manager:
         pose_37:
           Value: false
         pose_38:
-          Value: false
+          Value: true
         pose_39:
-          Value: false
+          Value: true
         pose_4:
           Value: false
         pose_40:
-          Value: false
+          Value: true
         pose_41:
-          Value: false
+          Value: true
         pose_42:
-          Value: false
+          Value: true
         pose_43:
-          Value: false
+          Value: true
         pose_44:
-          Value: false
+          Value: true
         pose_45:
-          Value: false
+          Value: true
         pose_46:
-          Value: false
+          Value: true
         pose_47:
-          Value: false
+          Value: true
         pose_48:
-          Value: false
+          Value: true
         pose_49:
-          Value: false
+          Value: true
         pose_5:
           Value: false
         pose_50:
-          Value: false
+          Value: true
         pose_51:
-          Value: false
+          Value: true
         pose_52:
-          Value: false
+          Value: true
         pose_53:
-          Value: false
+          Value: true
         pose_54:
-          Value: false
+          Value: true
         pose_55:
-          Value: false
+          Value: true
         pose_56:
-          Value: false
+          Value: true
         pose_57:
           Value: true
         pose_58:
@@ -313,6 +358,18 @@ Visualization Manager:
         pose_92:
           Value: true
         pose_93:
+          Value: true
+        pose_94:
+          Value: true
+        pose_95:
+          Value: true
+        pose_96:
+          Value: true
+        pose_97:
+          Value: true
+        pose_98:
+          Value: true
+        pose_99:
           Value: true
         qualisys_frame:
           Value: false
@@ -416,12 +473,6 @@ Visualization Manager:
           Value: false
         robot_k4a_bottom_camera_visor:
           Value: false
-        robot_k4a_bottom_gravity_link:
-          Value: false
-        robot_k4a_bottom_imu_filtered_link:
-          Value: false
-        robot_k4a_bottom_imu_link:
-          Value: false
         robot_k4a_bottom_link:
           Value: false
         robot_k4a_pole_link:
@@ -433,12 +484,6 @@ Visualization Manager:
         robot_k4a_top_camera_body:
           Value: false
         robot_k4a_top_camera_visor:
-          Value: false
-        robot_k4a_top_gravity_link:
-          Value: false
-        robot_k4a_top_imu_filtered_link:
-          Value: false
-        robot_k4a_top_imu_link:
           Value: false
         robot_k4a_top_link:
           Value: false
@@ -453,18 +498,22 @@ Visualization Manager:
         robot_map:
           Value: false
         robot_odom:
-          Value: true
+          Value: false
         robot_pantilt_base_link:
           Value: false
         robot_pantilt_pan_link:
           Value: false
         robot_pantilt_tilt_link:
           Value: false
+        robot_projector_link:
+          Value: false
         robot_rear_laser_base_link:
           Value: false
         robot_rear_laser_link:
           Value: false
         robot_rear_laser_support_link:
+          Value: false
+        submap_node0:
           Value: false
         world:
           Value: true
@@ -481,9 +530,53 @@ Visualization Manager:
             {}
           pose_10:
             {}
+          pose_100:
+            {}
+          pose_101:
+            {}
+          pose_102:
+            {}
+          pose_103:
+            {}
+          pose_104:
+            {}
+          pose_105:
+            {}
+          pose_106:
+            {}
+          pose_107:
+            {}
+          pose_108:
+            {}
+          pose_109:
+            {}
           pose_11:
             {}
+          pose_110:
+            {}
+          pose_111:
+            {}
+          pose_112:
+            {}
+          pose_113:
+            {}
+          pose_114:
+            {}
+          pose_115:
+            {}
+          pose_116:
+            {}
+          pose_117:
+            {}
+          pose_118:
+            {}
+          pose_119:
+            {}
           pose_12:
+            {}
+          pose_120:
+            {}
+          pose_121:
             {}
           pose_13:
             {}
@@ -663,6 +756,18 @@ Visualization Manager:
             {}
           pose_93:
             {}
+          pose_94:
+            {}
+          pose_95:
+            {}
+          pose_96:
+            {}
+          pose_97:
+            {}
+          pose_98:
+            {}
+          pose_99:
+            {}
           robot_odom:
             fuser_base_link:
               {}
@@ -768,11 +873,15 @@ Visualization Manager:
                             {}
                           lidar_top/os_lidar:
                             {}
+                robot_projector_link:
+                  {}
                 robot_rear_laser_base_link:
                   robot_rear_laser_link:
                     {}
                 robot_rear_laser_support_link:
                   {}
+          submap_node0:
+            {}
       Update Interval: 0
       Value: true
     - Alpha: 0.5
@@ -812,8 +921,8 @@ Visualization Manager:
       Class: rviz/PointCloud2
       Color: 85; 0; 255
       Color Transformer: FlatColor
-      Decay Time: 5
-      Enabled: true
+      Decay Time: 1
+      Enabled: false
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Min Color: 0; 0; 0
@@ -828,7 +937,7 @@ Visualization Manager:
       Unreliable: false
       Use Fixed Frame: true
       Use rainbow: true
-      Value: true
+      Value: false
     - Alpha: 1
       Autocompute Intensity Bounds: true
       Autocompute Value Bounds:
@@ -840,7 +949,7 @@ Visualization Manager:
       Class: rviz/LaserScan
       Color: 255; 0; 0
       Color Transformer: FlatColor
-      Decay Time: 1000
+      Decay Time: 0
       Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
@@ -886,7 +995,7 @@ Visualization Manager:
       Marker Topic: /acg_node_localization/ndt_nodes_marker
       Name: ndt_nodes
       Namespaces:
-        {}
+        acg: true
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -894,39 +1003,9 @@ Visualization Manager:
       Marker Topic: /acg_node_localization/localization_pose_markers
       Name: loc_pose
       Namespaces:
-        {}
+        acg: true
       Queue Size: 100
       Value: true
-    - Alpha: 0.699999988079071
-      Class: rviz/Map
-      Color Scheme: map
-      Draw Behind: false
-      Enabled: false
-      Name: Map
-      Topic: /acg_node_localization/occupancy_grid_acg_global
-      Unreliable: false
-      Use Timestamp: false
-      Value: false
-    - Alpha: 0.699999988079071
-      Class: rviz/Map
-      Color Scheme: map
-      Draw Behind: false
-      Enabled: false
-      Name: Map
-      Topic: /acg_node_localization/lastgraphmap_acg_occ
-      Unreliable: false
-      Use Timestamp: false
-      Value: false
-    - Alpha: 0.699999988079071
-      Class: rviz/Map
-      Color Scheme: map
-      Draw Behind: false
-      Enabled: false
-      Name: Map
-      Topic: /acg_node_localization/two_occ_lastgraphmap_acg
-      Unreliable: false
-      Use Timestamp: false
-      Value: false
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /acg_node_localization/prior_nodes_marker
@@ -936,21 +1015,21 @@ Visualization Manager:
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /acg_node_localization/prior_observations_markers
       Name: prior_obs
       Namespaces:
         {}
       Queue Size: 100
-      Value: false
+      Value: true
     - Class: rviz/Marker
-      Enabled: false
+      Enabled: true
       Marker Topic: /acg_node_localization/angles_prior
       Name: angles_prior
       Namespaces:
-        {}
+        acg: true
       Queue Size: 100
-      Value: false
+      Value: true
     - Alpha: 1
       Class: ndt_rviz/NDTVectorMap
       Color: 204; 51; 204
@@ -961,22 +1040,70 @@ Visualization Manager:
       Unreliable: false
       Value: true
     - Alpha: 1
-      Class: auto_complete_graph_rviz_visualisation/ACGMapsDisplay
-      Color: 204; 51; 204
-      Enabled: true
-      History Length: 1
-      Name: ACGMapsDisplay
-      Topic: ""
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/LaserScan
+      Color: 0; 0; 0
+      Color Transformer: FlatColor
+      Decay Time: 0
+      Enabled: false
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: LaserScan
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic: /graph_node/laserscan_in_fuser_frame
       Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
+      Value: false
+    - Alpha: 0.699999988079071
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /graph_node/latest_occupancy_grid_map
+      Unreliable: false
+      Use Timestamp: false
       Value: true
     - Alpha: 1
-      Class: ndt_rviz/NDT
-      Color: 0; 255; 127
+      Autocompute Intensity Bounds: true
+      Autocompute Value Bounds:
+        Max Value: 10
+        Min Value: -10
+        Value: true
+      Axis: Z
+      Channel Name: intensity
+      Class: rviz/PointCloud2
+      Color: 255; 255; 255
+      Color Transformer: Intensity
+      Decay Time: 0
       Enabled: false
-      History Length: 1
-      Name: NDT
-      Topic: /graph_node/graph_map_ndt_map
+      Invert Rainbow: false
+      Max Color: 255; 255; 255
+      Min Color: 0; 0; 0
+      Name: PointCloud2
+      Position Transformer: XYZ
+      Queue Size: 10
+      Selectable: true
+      Size (Pixels): 3
+      Size (m): 0.009999999776482582
+      Style: Points
+      Topic: /graph_node/converted_pointcloud
       Unreliable: false
+      Use Fixed Frame: true
+      Use rainbow: true
       Value: false
   Enabled: true
   Global Options:
@@ -1005,21 +1132,26 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: 3.0750083923339844
-      Class: rviz/TopDownOrtho
+      Class: rviz/XYOrbit
+      Distance: 141.4511260986328
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
+      Focal Point:
+        X: 11.5097074508667
+        Y: 17.4394588470459
+        Z: 0
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Scale: 24.084115982055664
-      Target Frame: <Fixed Frame>
-      Value: TopDownOrtho (rviz)
-      X: -1.7584714889526367
-      Y: -21.37480354309082
+      Pitch: 1.5697963237762451
+      Target Frame: latest
+      Value: XYOrbit (rviz)
+      Yaw: 1.902189016342163
     Saved:
       - Class: rviz/Orbit
         Distance: 59.950599670410156
