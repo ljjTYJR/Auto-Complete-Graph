@@ -656,8 +656,7 @@ inline void ACGToVectorMaps(
         for (auto it = acg.getRobotNodes().begin();
              it != acg.getRobotNodes().end(); ++it) {
             ndt_map::NDTMapMsg msg;
-            bool good =
-                perception_oru::toMessage((*it)->getMap().get(), msg, "/world");
+            bool good = perception_oru::toMessage((*it)->getMap().get(), msg, "/world");
 
             maps.maps.push_back(msg);
 

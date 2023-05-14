@@ -124,8 +124,7 @@ class ACGMCLLocalization : public perception_oru::particle_filter {
 
     void toMessage(auto_complete_graph::GraphMapLocalizationMsg& msg) {
         for (auto const& localization : _localization) {
-            auto_complete_graph::LocalizationMsg loc_msg =
-                AASS::acg::toMessage(localization);
+            auto_complete_graph::LocalizationMsg loc_msg = AASS::acg::toMessage(localization);
             msg.localizations.push_back(loc_msg);
         }
     }

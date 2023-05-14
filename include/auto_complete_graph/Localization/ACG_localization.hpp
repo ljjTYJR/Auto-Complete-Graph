@@ -97,8 +97,7 @@ class AutoCompleteGraphLocalization
     std::mt19937_64 _gen;
     /* This is where you define the number generator for unsigned long long:
      * between -10 and 10*/
-    std::uniform_real_distribution<double> _dis =
-        std::uniform_real_distribution<double>(-0.2, 0.2);
+    std::uniform_real_distribution<double> _dis = std::uniform_real_distribution<double>(-0.2, 0.2);
     /// Add noise to the odometry measurements ?
     bool _add_odometry_noise = false;
     bool _not_incremental = false;
@@ -239,11 +238,11 @@ class AutoCompleteGraphLocalization
         const {
         return _edge_prior_observation;
     }
+
     std::vector<g2o::VertexSE2RobotLocalization*>& getRobotPoseLocalization() {
         return _nodes_localization;
     }
-    const std::vector<g2o::VertexSE2RobotLocalization*>&
-    getRobotPoseLocalization() const {
+    const std::vector<g2o::VertexSE2RobotLocalization*>& getRobotPoseLocalization() const {
         return _nodes_localization;
     }
     std::set<g2o::VertexNDTCell*>& getNDTCells() { return _vertices_ndt_cell; }

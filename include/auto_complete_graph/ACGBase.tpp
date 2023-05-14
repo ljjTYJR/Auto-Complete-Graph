@@ -735,8 +735,7 @@ inline void AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::
 template <typename Prior, typename VertexPrior, typename EdgePrior>
 inline bool
 AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::ErrorStable(
-    const std::deque<double>& _chi_kernel,
-    int max_steps) {
+    const std::deque<double>& _chi_kernel, int max_steps) {
     if (_chi_kernel.size() < 2) {
         throw std::runtime_error(
             "Cannot determine error difference with less than 2 optimization "
@@ -767,8 +766,7 @@ AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::ErrorStable(
         ROS_DEBUG_STREAM(std::abs(*it - *(it - 1)) << " ");
         ++max_steps_count;
     }
-    ROS_INFO_STREAM("Error is " << error_mean << "threshold is "
-                                << _error_threshold_stop_optimization);
+    ROS_INFO_STREAM("Error is " << error_mean << "threshold is " << _error_threshold_stop_optimization);
     if (error_mean < _error_threshold_stop_optimization) {
         return true;
     }

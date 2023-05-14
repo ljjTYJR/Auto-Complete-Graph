@@ -34,6 +34,8 @@ class VisuAutoCompleteGraphBase {
     ros::Publisher _acg_gdim;
     ros::Publisher _acg_gdim_om;
     ros::Publisher _observation_edge_pub;
+    // Publish the odometry link between robot-ndt-poses
+    ros::Publisher _robot_ndt_odometry_link_pub;
 
     int _nb_of_zone;
     std::vector<nav_msgs::OccupancyGrid::ConstPtr> grids;
@@ -49,14 +51,14 @@ class VisuAutoCompleteGraphBase {
     visualization_msgs::Marker _anglesw_prior_markers;
     visualization_msgs::Marker _gaussian_that_gave_corners;
     visualization_msgs::Marker _gaussian_that_gave_corners2;
+    visualization_msgs::Marker _robot_ndt_pose_odometry_link;
 
     double _resolution;
 
     std::string _image_file;
 
    public:
-    VisuAutoCompleteGraphBase(ros::NodeHandle nh,
-                              const std::string& world_frame_id = "/world")
+    VisuAutoCompleteGraphBase(ros::NodeHandle nh, const std::string& world_frame_id = "/world")
         : _nb_of_zone(-1), _resolution(0.1) {
         _nh = nh;
         _last_ndtmap_occ = _nh.advertise<nav_msgs::OccupancyGrid>("lastgraphmap_acg_occ", 10);
@@ -75,6 +77,7 @@ class VisuAutoCompleteGraphBase {
         _gaussian_pub = _nh.advertise<visualization_msgs::Marker>( "gaussian_that_gave_corners", 10);
         _gaussian_pub2 = _nh.advertise<visualization_msgs::Marker>( "gaussian_that_gave_corners2", 10);
         _observation_edge_pub = _nh.advertise<visualization_msgs::Marker>("observation_edge", 10);
+        _robot_ndt_odometry_link_pub = _nh.advertise<visualization_msgs::Marker>("robot_ndt_odometry_link", 10);
 
         _prior_edge_markers.type = visualization_msgs::Marker::LINE_LIST;
         _prior_edge_markers.header.frame_id = world_frame_id;
@@ -82,17 +85,17 @@ class VisuAutoCompleteGraphBase {
         _prior_edge_markers.id = 0;
         _prior_edge_markers.scale.x = 0.2;
         _prior_edge_markers.scale.y = 0.2;
-        _prior_edge_markers.color.b = 0.0f;
+        _prior_edge_markers.color.b = 0.5f;
         _prior_edge_markers.color.a = 1.0;
 
         _observation_edge_markers.type = visualization_msgs::Marker::LINE_LIST;
         _observation_edge_markers.header.frame_id = world_frame_id;
         _observation_edge_markers.ns = "acg";
         _observation_edge_markers.id = 0;
-        _observation_edge_markers.scale.x = 0.2;
-        _observation_edge_markers.scale.y = 0.2;
-        _observation_edge_markers.color.g = 1.0f;
-        _observation_edge_markers.color.a = 1.0;
+        _observation_edge_markers.scale.x = 0.1;
+        _observation_edge_markers.scale.y = 0.1;
+        _observation_edge_markers.color.b = 1.0f;
+        _observation_edge_markers.color.a = 0.4;
 
         _ndt_node_markers.type = visualization_msgs::Marker::POINTS;
         _ndt_node_markers.header.frame_id = world_frame_id;
@@ -182,6 +185,15 @@ class VisuAutoCompleteGraphBase {
         _gaussian_that_gave_corners2.color.r = 1.0f;
         _gaussian_that_gave_corners2.color.b = 1.0f;
         _gaussian_that_gave_corners2.color.a = 1.0;
+
+        _robot_ndt_pose_odometry_link.type = visualization_msgs::Marker::LINE_LIST;
+        _robot_ndt_pose_odometry_link.header.frame_id = world_frame_id;
+        _robot_ndt_pose_odometry_link.ns = "acg";
+        _robot_ndt_pose_odometry_link.id = 8;
+        _robot_ndt_pose_odometry_link.scale.x = 0.2;
+        _robot_ndt_pose_odometry_link.scale.y = 0.2;
+        _robot_ndt_pose_odometry_link.color.g = 1.0f;
+        _robot_ndt_pose_odometry_link.color.a = 0.2f;
     }
     void setImageFileNameOut(const std::string& f) { _image_file = f; }
 
@@ -228,6 +240,7 @@ class VisuAutoCompleteGraphBase {
         const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg) {
         drawPrior(acg);
         drawCornersNdt(acg);
+        drawOdometryBetweenRobots(acg);
         if (_nb_of_zone != acg.getRobotNodes().size()) {
             drawObservations(acg);
             drawGaussiansThatGaveCorners(acg);
@@ -244,8 +257,7 @@ class VisuAutoCompleteGraphBase {
         }
     }
 
-    void updateRvizNoNDT(
-        const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg) {
+    void updateRvizNoNDT(const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg) {
         drawPrior(acg);
         drawCornersNdt(acg);
         drawAngles(acg);
@@ -345,6 +357,7 @@ class VisuAutoCompleteGraphBase {
         std::cout << "Not implemented" << std::endl;
     }
     void drawCornersNdt( const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg);
+    void drawOdometryBetweenRobots(const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg);
     void drawGaussiansThatGaveCorners( const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg);
     void drawAngles(
         const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg);
@@ -401,13 +414,10 @@ inline void AASS::acg::
 
         auto it = edges.begin();
         for (it; it != edges.end(); ++it) {
-            for (auto ite2 = (*it)->vertices().begin();
-                 ite2 != (*it)->vertices().end(); ++ite2) {
+            for (auto ite2 = (*it)->vertices().begin(); ite2 != (*it)->vertices().end(); ++ite2) {
                 geometry_msgs::Point p;
-                g2o::VertexSE2ACG* ptr =
-                    dynamic_cast<g2o::VertexSE2ACG*>((*ite2));
-                g2o::VertexPointXYACG* ptr2 =
-                    dynamic_cast<g2o::VertexPointXYACG*>((*ite2));
+                g2o::VertexSE2ACG* ptr = dynamic_cast<g2o::VertexSE2ACG*>((*ite2));
+                g2o::VertexPointXYACG* ptr2 = dynamic_cast<g2o::VertexPointXYACG*>((*ite2));
                 if (ptr != NULL) {
                     auto vertex = ptr->estimate().toVector();
                     // Getting the translation out of the transform :
@@ -458,6 +468,37 @@ inline void AASS::acg::VisuAutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>:
     }
     drawAngles(acg);
     _corner_ndt_node_pub.publish(_corner_ndt_node_markers);
+}
+
+bool checkTwoNumber(size_t a, size_t b) {
+    return (a != b);
+}
+
+template <typename Prior, typename VertexPrior, typename EdgePrior>
+inline void AASS::acg::VisuAutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::drawOdometryBetweenRobots(const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg) {
+    auto edges = acg.getOdometryEdges();
+    bool new_edge = checkTwoNumber(edges.size(), _robot_ndt_pose_odometry_link.points.size());
+
+    if (new_edge) {
+        _robot_ndt_pose_odometry_link.points.clear();
+        for (auto it = edges.begin(); it != edges.end(); ++it) {
+            for (auto it2 = (*it)->vertices().begin(); it2 != (*it)->vertices().end(); ++it2) {
+                geometry_msgs::Point p;
+                g2o::VertexSE2ACG* ptr = dynamic_cast<g2o::VertexSE2ACG*>((*it2));
+                if (ptr != NULL) {
+                    auto vertex = ptr->estimate().toVector();
+                    p.x = vertex(0);
+                    p.y = vertex(1);
+                    p.z = acg.getZElevation();
+                } else {
+                    ROS_ERROR_STREAM("Not found ");
+                    throw std::runtime_error("Vertex type not found");
+                }
+                _robot_ndt_pose_odometry_link.points.push_back(p);
+            }
+        }
+    }
+    _robot_ndt_odometry_link_pub.publish(_robot_ndt_pose_odometry_link);
 }
 
 template <typename Prior, typename VertexPrior, typename EdgePrior>
@@ -639,9 +680,9 @@ inline void AASS::acg::
 }
 
 template <typename Prior, typename VertexPrior, typename EdgePrior>
-inline void AASS::acg::
-    VisuAutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::drawRobotPoses(
+inline void AASS::acg::VisuAutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::drawRobotPoses(
         const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg) {
+
     _ndt_node_markers.points.clear();
     _ndt_node_markers.header.stamp = ros::Time::now();
 

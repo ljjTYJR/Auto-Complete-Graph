@@ -645,12 +645,13 @@ void gotGraphandOptimize(
     // Prepare the graph : marginalize + initializeOpti
     std::pair<int, int> iterations;
     ros::Time start_opti = ros::Time::now();
-    bool optiquest = true;
+    bool optimize_request = false;
+    ROS_INFO_STREAM("Do not optimize");
     if (testing_pause) {
         std::cout << "Optimize ?" << std::endl;
-        std::cin >> optiquest;
+        std::cin >> optimize_request;
     }
-    if (/*oacg->checkAbleToOptimize() &&*/ optiquest) {
+    if (/*oacg->checkAbleToOptimize() &&*/ optimize_request) {
         oacg->setFirst();
         oacg->prepare();
         std::cout << "ITERATIO COUNT " << max_iteration << std::endl;
@@ -680,14 +681,14 @@ void gotGraphandOptimize(
         std::cin >> aaa;
     }
 
-    if (export_iteration_count == true && optiquest) {
+    if (export_iteration_count == true && optimize_request) {
         bool done = exportIterationCOunt(*oacg, iterations, corner_extract_tt, opti);
     }
 
     timef = ros::Time::now();
     all_node_times.push_back((timef - start).toSec());
 
-    if (optiquest && add_noise_odometry) {
+    if (optimize_request && add_noise_odometry) {
         exportErrorNoiseOdometry(*oacg);
     }
 

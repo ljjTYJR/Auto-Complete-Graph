@@ -41,10 +41,8 @@ class OptimizableAutoCompleteGraph : public g2o::SparseOptimizer {
         : _sensorOffsetTransf(sensoffset), _first(true) {
         auto linearSolver = g2o::make_unique<SlamLinearSolver>();
         linearSolver->setBlockOrdering(false);
-        auto blockSolver =
-            g2o::make_unique<SlamBlockSolver>(std::move(linearSolver));
-        _solver =
-            new g2o::OptimizationAlgorithmGaussNewton(std::move(blockSolver));
+        auto blockSolver = g2o::make_unique<SlamBlockSolver>(std::move(linearSolver));
+        _solver = new g2o::OptimizationAlgorithmGaussNewton(std::move(blockSolver));
         this->setAlgorithm(_solver);
 
         // add the parameter representing the sensor offset
@@ -96,8 +94,7 @@ class OptimizableAutoCompleteGraph : public g2o::SparseOptimizer {
     void optimize(int iter_in = 10) {
         int iter = g2o::SparseOptimizer::optimize(iter_in);
         if (iter > 0 && !iter) {
-            std::cerr << "Optimization failed, result might be invalid"
-                      << std::endl;
+            std::cerr << "Optimization failed, result might be invalid" << std::endl;
         }
     }
 

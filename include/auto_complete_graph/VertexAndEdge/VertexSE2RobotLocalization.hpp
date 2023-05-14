@@ -40,8 +40,7 @@ class VertexSE2RobotLocalization : public g2o::VertexSE2RobotPose {
         Eigen::Vector3d robot_frame_pose = this->estimate().toVector();
         assert(_to_robot_localization != Eigen::Vector3d::Zero());
         Eigen::Vector3d mcl_pose_inglobal_frame;
-        AASS::acg::translateFromRobotFrameToGlobalFrame(
-            _to_robot_localization, robot_frame_pose, mcl_pose_inglobal_frame);
+        AASS::acg::translateFromRobotFrameToGlobalFrame(_to_robot_localization, robot_frame_pose, mcl_pose_inglobal_frame);
         return mcl_pose_inglobal_frame;
     }
     const Eigen::Matrix3d& getCovariance() const { return cov; }

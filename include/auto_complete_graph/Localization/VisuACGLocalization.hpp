@@ -49,8 +49,7 @@ class VisuAutoCompleteGraphLocalization
                                     g2o::EdgeXYPriorACG>(nh, world_frame_id) {
         _localization_pub = _nh.advertise<visualization_msgs::Marker>(
             "localization_markers", 10);
-        _localization_pose_pub = _nh.advertise<visualization_msgs::Marker>(
-            "localization_pose_markers", 10);
+        _localization_pose_pub = _nh.advertise<visualization_msgs::Marker>("localization_pose_markers", 10);
         _prior_observations_pub = _nh.advertise<visualization_msgs::Marker>(
             "prior_observations_markers", 10);
         _mcl_angles_pub =
@@ -309,15 +308,13 @@ inline void VisuAutoCompleteGraphLocalization::drawLocalizationLandmarks(const A
     _last_landmark.publish(_last_seen_landmark_in_mcl_pose);
 }
 
-inline void VisuAutoCompleteGraphLocalization::drawPoseLocalizations(
-    const AutoCompleteGraphLocalization& acg) {
+inline void VisuAutoCompleteGraphLocalization::drawPoseLocalizations(const AutoCompleteGraphLocalization& acg) {
     _ndt_node_localization_markers.header.stamp = ros::Time::now();
     _ndt_node_localization_markers.points.clear();
     auto loc_vec = acg.getRobotPoseLocalization();
     for (auto loc : loc_vec) {
         geometry_msgs::Point p;
-        g2o::VertexSE2RobotLocalization* ptr =
-            dynamic_cast<g2o::VertexSE2RobotLocalization*>(loc);
+        g2o::VertexSE2RobotLocalization* ptr = dynamic_cast<g2o::VertexSE2RobotLocalization*>(loc);
         auto vertex = ptr->localizationInGlobalFrame();
         // Getting the translation out of the transform :
         // https://en.wikipedia.org/wiki/Transformation_matrix
