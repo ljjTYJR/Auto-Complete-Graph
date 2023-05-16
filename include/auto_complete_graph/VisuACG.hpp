@@ -36,6 +36,7 @@ class VisuAutoCompleteGraphBase {
     ros::Publisher _observation_edge_pub;
     // Publish the odometry link between robot-ndt-poses
     ros::Publisher _robot_ndt_odometry_link_pub;
+    ros::Publisher _received_robot_poses_pub;
 
     int _nb_of_zone;
     std::vector<nav_msgs::OccupancyGrid::ConstPtr> grids;
@@ -52,6 +53,7 @@ class VisuAutoCompleteGraphBase {
     visualization_msgs::Marker _gaussian_that_gave_corners;
     visualization_msgs::Marker _gaussian_that_gave_corners2;
     visualization_msgs::Marker _robot_ndt_pose_odometry_link;
+    visualization_msgs::Marker _reveiced_robot_poses;
 
     double _resolution;
 
@@ -78,6 +80,7 @@ class VisuAutoCompleteGraphBase {
         _gaussian_pub2 = _nh.advertise<visualization_msgs::Marker>( "gaussian_that_gave_corners2", 10);
         _observation_edge_pub = _nh.advertise<visualization_msgs::Marker>("observation_edge", 10);
         _robot_ndt_odometry_link_pub = _nh.advertise<visualization_msgs::Marker>("robot_ndt_odometry_link", 10);
+        _received_robot_poses_pub = _nh.advertise<visualization_msgs::Marker>("received_robot_poses", 10);
 
         _prior_edge_markers.type = visualization_msgs::Marker::LINE_LIST;
         _prior_edge_markers.header.frame_id = world_frame_id;
@@ -194,6 +197,15 @@ class VisuAutoCompleteGraphBase {
         _robot_ndt_pose_odometry_link.scale.y = 0.2;
         _robot_ndt_pose_odometry_link.color.g = 1.0f;
         _robot_ndt_pose_odometry_link.color.a = 0.2f;
+
+        _reveiced_robot_poses.type = visualization_msgs::Marker::POINTS;
+        _reveiced_robot_poses.header.frame_id = world_frame_id;
+        _reveiced_robot_poses.ns = "acg";
+        _reveiced_robot_poses.id = 9;
+        _reveiced_robot_poses.scale.x = 0.5;
+        _reveiced_robot_poses.scale.y = 0.5;
+        _reveiced_robot_poses.color.g = 1.0f;
+        _reveiced_robot_poses.color.a = 1.0f;
     }
     void setImageFileNameOut(const std::string& f) { _image_file = f; }
 
@@ -245,6 +257,7 @@ class VisuAutoCompleteGraphBase {
             drawObservations(acg);
             drawGaussiansThatGaveCorners(acg);
             drawRobotPoses(acg);
+            drawReceivedRobotPoses(acg);
 
             ndt_map::NDTVectorMapMsg msg;
             msg.header.frame_id = "/world";
@@ -273,11 +286,8 @@ class VisuAutoCompleteGraphBase {
             ROS_DEBUG_STREAM("update the zones");
 
             for (size_t i = 0; i < acg.getRobotNodes().size(); ++i) {
-                nav_msgs::OccupancyGrid* omap_tmp =
-                    new nav_msgs::OccupancyGrid();
-                perception_oru::toOccupancyGrid(
-                    acg.getRobotNodes()[i]->getMap().get(), *omap_tmp,
-                    _resolution, "/world");
+                nav_msgs::OccupancyGrid* omap_tmp = new nav_msgs::OccupancyGrid();
+                perception_oru::toOccupancyGrid(acg.getRobotNodes()[i]->getMap().get(), *omap_tmp, _resolution, "/world");
                 auto node = acg.getRobotNodes()[i];
                 auto vertex = node->estimate().toIsometry();
                 moveOccupancyMap(*omap_tmp, vertex);
@@ -359,16 +369,19 @@ class VisuAutoCompleteGraphBase {
     void drawCornersNdt( const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg);
     void drawOdometryBetweenRobots(const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg);
     void drawGaussiansThatGaveCorners( const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg);
-    void drawAngles(
-        const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg);
+    void drawAngles(const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg);
     void drawPriorAngles(
         const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg,
         const VertexPrior& vertex_in,
         const Eigen::Vector2d& vertex_pose);
-    void drawRobotPoses(
-        const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg);
-    void drawObservations(
-        const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg);
+    void drawRobotPoses(const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg);
+    void drawObservations(const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg);
+    /**
+     * @brief In Rviz, draw the received robot poses. In principle, the robot poses are received from fuser.
+     *
+     * @acg : The acg object
+     */
+    void drawReceivedRobotPoses(const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg);
 
     void saveImage(
         const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg,
@@ -686,6 +699,13 @@ inline void AASS::acg::VisuAutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>:
     _ndt_node_markers.points.clear();
     _ndt_node_markers.header.stamp = ros::Time::now();
 
+    // try {
+    //     acg.checkRobotPoseNotMoved("Visualize the ndt nodes!");
+    // } catch (const std::runtime_error& e) {
+    //     ROS_ERROR_STREAM(e.what());
+    //     return;
+    // }
+
     for (size_t i = 0; i < acg.getRobotNodes().size(); ++i) {
         auto node = acg.getRobotNodes()[i];
         geometry_msgs::Point p;
@@ -700,6 +720,25 @@ inline void AASS::acg::VisuAutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>:
     }
 
     _ndt_node_pub.publish(_ndt_node_markers);
+}
+
+template <typename Prior, typename VertexPrior, typename EdgePrior>
+inline void AASS::acg::VisuAutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::drawReceivedRobotPoses(
+        const AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>& acg) {
+    int marker_size = _reveiced_robot_poses.points.size();
+    int received_robot_poses_size = acg.getReceivedRobotPoses().size();
+
+    _reveiced_robot_poses.header.stamp = ros::Time::now();
+
+    for (int i = marker_size; i < received_robot_poses_size; ++i) {
+        geometry_msgs::Point p;
+        auto vertex = acg.getReceivedRobotPoses()[i].toVector();
+        p.x = vertex(0);
+        p.y = vertex(1);
+        p.z = acg.getZElevation();
+        _reveiced_robot_poses.points.push_back(p);
+    }
+    _received_robot_poses_pub.publish(_reveiced_robot_poses);
 }
 
 template <>

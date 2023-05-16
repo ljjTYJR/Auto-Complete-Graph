@@ -24,6 +24,7 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <laser_geometry/laser_geometry.h>
 #include <nav_msgs/Odometry.h>
+#include <nav_msgs/Path.h>
 #include <boost/circular_buffer.hpp>
 
 #include <message_filters/subscriber.h>
@@ -90,6 +91,18 @@ void publishOdomMsg(ros::Publisher& pub, nav_msgs::Odometry& odom_msg, Eigen::Af
     odom_msg.header.stamp = time;
     tf::poseEigenToMsg(pose, odom_msg.pose.pose);
     pub.publish(odom_msg);
+}
+
+void publishFuserPath(ros::Publisher& pub, Eigen::Affine3d& pose, const ros::Time& time, const std::string& frame) {
+    static nav_msgs::Path path;
+    geometry_msgs::PoseStamped pose_msg;
+    path.header.frame_id = frame;
+    path.header.stamp = time;
+    tf::poseEigenToMsg(pose, pose_msg.pose);
+    pose_msg.header.stamp = time;
+    pose_msg.header.frame_id = frame;
+    path.poses.push_back(pose_msg);
+    pub.publish(path);
 }
 
 void publishPointCloudMsg(pcl::PointCloud<pcl::PointXYZ>& cloud, const ros::Time& time, const std::string& frame_id, ros::Publisher& pub) {
@@ -210,6 +223,7 @@ class GraphMapFuserNode {
     tf::TransformListener tf_listener_;
     ros::Publisher output_pub_;
     ros::Publisher graphmap_pub_, graphmap_localization_pub;
+    ros::Publisher fuser_path_pub_;
     Eigen::Affine3d pose_, T, sensorPose_;
 
     ros::Timer timer_transformation_map;
@@ -509,6 +523,7 @@ public:
         // Publisher of graph_map message
 
         graphmap_pub_ = param_nh.advertise<graph_map_custom_msgs::GraphMapMsg>("graph_map", 50);
+        fuser_path_pub_ = param_nh.advertise<nav_msgs::Path>("fuser_path", 50);
         graph_map_vector_ = param_nh.advertise<ndt_map::NDTVectorMapMsg>("graph_map_vector", 50);
         graphmap_localization_pub = param_nh.advertise<auto_complete_graph::GraphMapLocalizationMsg>("graph_map_localization", 50);
 
@@ -590,17 +605,17 @@ public:
         }
         if (use_mcl_ && mcl_loaded_) {
             ROS_DEBUG("*************************** > Real Localization < ****************************");
-            auto_complete_graph::GraphMapLocalizationMsg graphmaplocalizationmsg;
-            graphmaplocalizationmsg.graph_map = graphmapmsg;
-            acg_localization->toMessage(graphmaplocalizationmsg);
-            graphmap_localization_pub.publish(graphmaplocalizationmsg);
+            auto_complete_graph::GraphMapLocalizationMsg graph_map_localization_msg;
+            graph_map_localization_msg.graph_map = graphmapmsg;
+            acg_localization->toMessage(graph_map_localization_msg);
+            graphmap_localization_pub.publish(graph_map_localization_msg);
             // Export all localization information.
         } else {
             ROS_DEBUG("*************************** > Mock Localization < ****************************");
-            auto_complete_graph::GraphMapLocalizationMsg graphmaplocalizationmsg;
-            graphmaplocalizationmsg.graph_map = graphmapmsg;
-            mockLocalizationMessage(graphmaplocalizationmsg, fuser_->GetGraph()->GetNodes().size());
-            graphmap_localization_pub.publish(graphmaplocalizationmsg);
+            auto_complete_graph::GraphMapLocalizationMsg graph_map_localization_msg;
+            graph_map_localization_msg.graph_map = graphmapmsg;
+            mockLocalizationMessage(graph_map_localization_msg, fuser_->GetGraph()->GetNodes().size());
+            graphmap_localization_pub.publish(graph_map_localization_msg);
         }
 
         graphmap_pub_.publish(graphmapmsg);
@@ -876,7 +891,8 @@ public:
     void processFrame(pcl::PointCloud<pcl::PointXYZ>& cloud, Eigen::Affine3d Tmotion, const ros::Time& time = ros::Time::now()) {
         Eigen::Vector3d mcl_mean;
         Eigen::Matrix3d mcl_cov;
-        if (use_mcl_ && mcl_loaded_) {
+        bool mcl_ready = use_mcl_ && mcl_loaded_;
+        if (mcl_ready) {
             if (!use_graph_map_registration_) {
                 frame_nr_++;
             }
@@ -884,7 +900,7 @@ public:
             std::tie(mcl_mean, mcl_cov) = localization(Tmotion, cloud);
         }
         // By default, use graph_map to registration
-        if (!use_mcl_ || (use_mcl_ && mcl_loaded_)) {
+        if (!use_mcl_ || mcl_ready) {
             if (init_pose_tf_ == true && init_fuser_ == false) {
                 ROS_INFO_STREAM("Initializing fuser");
                 pose_ = getPose(world_link_id, robot_frame);
@@ -922,6 +938,7 @@ public:
             dumpFuseInfoOfTheFrame(fuse_flag, predicted_pose, pose_, frame_nr_);
             sendPoseBetweenTwoLinks(pose_, time, world_link_id, fuser_base_link_id);
             publishOdomMsg(fuser_odom_publisher_, fuser_odom, pose_, time);
+            publishFuserPath(fuser_path_pub_, pose_, time, world_link_id);
 
             // Publish transform from map to world.
             // TODO: what does the following code do?
@@ -936,10 +953,9 @@ public:
                 ROS_DEBUG_STREAM("Well " << nb_of_node << " != " << nb_of_node_new << " and id " << fuser_->GetGraph()->GetNodes()[i]->GetId());
             }
 
-            if (use_mcl_ && mcl_loaded_) {
+            if (mcl_ready) {
                 // If a new node was added, we save the location.
                 if (acg_localization->getLocalizations().size() != nb_of_node_new) {
-                    ROS_DEBUG_STREAM(" saving pose ");
                     acg_localization->savePos(nb_of_node_new - 1);
 
                     // Taking current cov for precedent node

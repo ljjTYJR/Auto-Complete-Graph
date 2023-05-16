@@ -810,3 +810,10 @@ inline void AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::
         }
     }
 }
+
+template <typename Prior, typename VertexPrior, typename EdgePrior>
+const inline void
+AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>
+::checkRobotPoseNotMoved (const std::string& when) const {
+    checkRobotPoseNotMoved(when);
+}

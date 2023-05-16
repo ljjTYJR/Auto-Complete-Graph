@@ -10,12 +10,17 @@ def send_msgs():
     rospy.init_node('basement_alignment_publisher')
     pub = rospy.Publisher('/clicked_point', PointStamped, queue_size=10)
     points = [
-        # prior/sensor; prior/sensor
-        # Point(x = 36.001, y = -3.39, z = 0.0),
+        # prior/sensor; prior/sensor (rosbag:left)
         Point(x = -13.161, y = 57.8, z = 0.0),
         Point(x = -4.151, y = 3.272, z = 0.0),
         Point(x = 3.011, y = 57.13, z = 0.0),
         Point(x = 20.25, y = 6.024, z = 0)
+
+        # prior/sensor; prior/sensor (rosbag:fullmap)
+        # Point(x = 2.929, y = 57.084, z = 0.0),
+        # Point(x = 21.893, y = 2.633, z = 0.0),
+        # Point(x = -13.099, y = 57.743, z = 0.0),
+        # Point(x = -2.330, y = 3.747, z = 0)
     ]
     for n in range(4):
         time.sleep(0.5)

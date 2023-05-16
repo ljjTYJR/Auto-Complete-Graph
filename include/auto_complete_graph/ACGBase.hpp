@@ -143,6 +143,9 @@ class AutoCompleteGraphBase {
     ///@brief vector storing all node from the ndt ndt_feature_graph
     std::vector<g2o::VertexSE2RobotPose*> _nodes_ndt;
 
+    // The vector storing the received robot poses (It can be viewed as estimated robot poses got from `fuser`)
+    std::vector<g2o::SE2> _received_robot_poses;
+
     ///@brief vector storing all edges between a landmark and the robot
     std::vector<g2o::EdgeLandmark_malcolm*> _edge_landmark;
 
@@ -322,6 +325,9 @@ class AutoCompleteGraphBase {
         return _nodes_ndt;
     }
 
+    std::vector<g2o::SE2>& getReceivedRobotPoses() { return _received_robot_poses; }
+    const std::vector<g2o::SE2>& getReceivedRobotPoses() const { return _received_robot_poses; }
+
     ///@brief vector storing all edges between a landmark and the robot
     std::vector<g2o::EdgeLandmark_malcolm*>& getLandmarkEdges() {
         return _edge_landmark;
@@ -460,8 +466,8 @@ class AutoCompleteGraphBase {
         const g2o::Vector2& pos,
         g2o::HyperGraph::Vertex* v1,
         g2o::HyperGraph::Vertex* v2);
-    virtual g2o::EdgeLandmark_malcolm*
-    addLandmarkObservation(const g2o::Vector2& pos, int from_id, int toward_id);
+    virtual g2o::EdgeLandmark_malcolm* addLandmarkObservation(
+        const g2o::Vector2& pos, int from_id, int toward_id);
 
     virtual EdgePrior* addEdgePrior(const g2o::SE2& se2,
                                     g2o::HyperGraph::Vertex* v1,
@@ -603,6 +609,7 @@ class AutoCompleteGraphBase {
     virtual bool checkAbleToOptimize() { return true; }
 
     void checkRobotPoseNotMoved(const std::string& when);
+    const void checkRobotPoseNotMoved (const std::string& when) const;
 
     /**
      * @rbief return the max on x and y of the prior
