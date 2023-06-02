@@ -699,13 +699,6 @@ inline void AASS::acg::VisuAutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>:
     _ndt_node_markers.points.clear();
     _ndt_node_markers.header.stamp = ros::Time::now();
 
-    // try {
-    //     acg.checkRobotPoseNotMoved("Visualize the ndt nodes!");
-    // } catch (const std::runtime_error& e) {
-    //     ROS_ERROR_STREAM(e.what());
-    //     return;
-    // }
-
     for (size_t i = 0; i < acg.getRobotNodes().size(); ++i) {
         auto node = acg.getRobotNodes()[i];
         geometry_msgs::Point p;
@@ -747,8 +740,7 @@ inline void AASS::acg::VisuAutoCompleteGraphBase<AutoCompleteGraphPriorSE2,
                                                  g2o::EdgeSE2Prior_malcolm>::
     drawPrior(const AASS::acg::AutoCompleteGraphBase<AutoCompleteGraphPriorSE2,
                                                      g2o::VertexSE2Prior,
-                                                     g2o::EdgeSE2Prior_malcolm>&
-                  acg) {
+                                                     g2o::EdgeSE2Prior_malcolm>& acg) {
     _prior_edge_markers.header.stamp = ros::Time::now();
     auto edges = acg.getPrior()->getEdges();
     if (edges.size() != _prior_edge_markers.points.size()) {
@@ -759,8 +751,7 @@ inline void AASS::acg::VisuAutoCompleteGraphBase<AutoCompleteGraphPriorSE2,
             for (auto ite2 = (*it)->vertices().begin();
                  ite2 != (*it)->vertices().end(); ++ite2) {
                 geometry_msgs::Point p;
-                g2o::VertexSE2ACG* ptr =
-                    dynamic_cast<g2o::VertexSE2ACG*>((*ite2));
+                g2o::VertexSE2ACG* ptr = dynamic_cast<g2o::VertexSE2ACG*>((*ite2));
                 auto vertex = ptr->estimate().toVector();
                 // Getting the translation out of the transform :
                 // https://en.wikipedia.org/wiki/Transformation_matrix

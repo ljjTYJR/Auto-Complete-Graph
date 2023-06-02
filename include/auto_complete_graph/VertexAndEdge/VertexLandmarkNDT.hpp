@@ -20,8 +20,7 @@ class VertexLandmarkNDT : public g2o::VertexPointXYACG {
    public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
 
-    std::unordered_set<std::shared_ptr<AASS::acg::LocalizationPointer>>
-        associated_localization;
+    std::unordered_set<std::shared_ptr<AASS::acg::LocalizationPointer>> associated_localization;
 
     std::vector<boost::shared_ptr<perception_oru::NDTCell>>
         cells_that_gave_it_1;
@@ -78,12 +77,10 @@ class VertexLandmarkNDT : public g2o::VertexPointXYACG {
         associated_localization.insert(lp);
     }
 
-    const Eigen::Matrix3d& getCovarianceObservation(
-        const VertexSE2RobotLocalization* vertex) const {
-        auto result = std::find_if(
-            associated_localization.begin(), associated_localization.end(),
-            [vertex](const std::shared_ptr<AASS::acg::LocalizationPointer>& a)
-                -> bool { return a->vertex_mcl_pose == vertex; });
+    const Eigen::Matrix3d& getCovarianceObservation(const VertexSE2RobotLocalization* vertex) const {
+        auto result = std::find_if(associated_localization.begin(), associated_localization.end(),
+                                   [vertex](const std::shared_ptr<AASS::acg::LocalizationPointer>& a)
+                                   -> bool { return a->vertex_mcl_pose == vertex; });
         return (*result)->cov;
     }
 

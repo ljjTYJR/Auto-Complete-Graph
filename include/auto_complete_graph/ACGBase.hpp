@@ -138,7 +138,7 @@ class AutoCompleteGraphBase {
     ///@brief the prior
     Prior* _prior;
 
-    ///@brief vector storing all node from the landarks
+    ///@brief vector storing all node from the landmarks: The corner landmarks in the ndt-map
     std::vector<g2o::VertexLandmarkNDT*> _nodes_landmark;
     ///@brief vector storing all node from the ndt ndt_feature_graph
     std::vector<g2o::VertexSE2RobotPose*> _nodes_ndt;
@@ -608,8 +608,8 @@ class AutoCompleteGraphBase {
     /// better. Removed for testing now
     virtual bool checkAbleToOptimize() { return true; }
 
-    void checkRobotPoseNotMoved(const std::string& when);
-    const void checkRobotPoseNotMoved (const std::string& when) const;
+    bool robotPosesHaveMoved();
+    const bool robotPosesHaveMoved () const;
 
     /**
      * @rbief return the max on x and y of the prior
@@ -641,6 +641,7 @@ class AutoCompleteGraphBase {
 
     // FOR TESTING
     virtual bool verifyInformationMatrices(bool verbose) const {
+        ROS_ERROR_STREAM("verifyInformationMatrices implemented!");
         bool allEdgeOk = true;
         Eigen::SelfAdjointEigenSolver<g2o::MatrixX> eigenSolver;
         for (g2o::OptimizableGraph::EdgeSet::const_iterator it =
@@ -680,6 +681,9 @@ class AutoCompleteGraphBase {
             }
         }
         return allEdgeOk;
+        if (allEdgeOk) {
+            ROS_ERROR_STREAM("All edges are okay!");
+        }
     }
 };
 

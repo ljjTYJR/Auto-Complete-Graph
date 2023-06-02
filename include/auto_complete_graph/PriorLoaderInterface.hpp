@@ -56,7 +56,8 @@ namespace AASS
 			{
 			}
 
-			PriorLoaderInterface(const std::string &file, double deviation, double anglet, double scalet, cv::Point2f center) : _file(file), _max_deviation_for_corner((45 * M_PI) / 180)
+			PriorLoaderInterface(const std::string &file, double deviation, double anglet, double scalet, cv::Point2f center)
+			: _file(file), _max_deviation_for_corner((45 * M_PI) / 180)
 			{
 				std::vector<cv::Point2f> pt_slam;
 				std::vector<cv::Point2f> pt_prior;

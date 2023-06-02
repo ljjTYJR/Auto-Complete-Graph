@@ -245,7 +245,9 @@ class AutoCompleteGraphLocalization
     const std::vector<g2o::VertexSE2RobotLocalization*>& getRobotPoseLocalization() const {
         return _nodes_localization;
     }
-    std::set<g2o::VertexNDTCell*>& getNDTCells() { return _vertices_ndt_cell; }
+    std::set<g2o::VertexNDTCell*>& getNDTCells() {
+        return _vertices_ndt_cell;
+    }
     const std::set<g2o::VertexNDTCell*>& getNDTCells() const {
         return _vertices_ndt_cell;
     }

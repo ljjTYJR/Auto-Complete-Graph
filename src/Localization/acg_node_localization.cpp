@@ -484,14 +484,10 @@ void publishACGOM(const AASS::acg::AutoCompleteGraphLocalization& oacg) {
         last_ndtmap.publish(mapmsg.ndt_maps.maps[size_o - 1]);
 
         nav_msgs::OccupancyGrid omap;
-        perception_oru::NDTMap* last_map =
-            oacg.getRobotNodes()[oacg.getRobotNodes().size() - 1]
-                ->getMap()
-                .get();
+        perception_oru::NDTMap* last_map = oacg.getRobotNodes()[oacg.getRobotNodes().size() - 1]->getMap().get();
 
-        perception_oru::toOccupancyGrid(
-            last_map, omap, occupancy_grid_resolution, map_frame,
-            scaling_gaussian_occ_map, euclidean_dist_occ_map);
+        perception_oru::toOccupancyGrid(last_map, omap, occupancy_grid_resolution, map_frame,
+                                        scaling_gaussian_occ_map, euclidean_dist_occ_map);
         last_occ_map.publish(omap);
     }
     ROS_INFO("Done");
@@ -612,9 +608,9 @@ void gotGraphandOptimize(
     AASS::acg::AutoCompleteGraphLocalization* oacg,
     AASS::acg::VisuAutoCompleteGraphLocalization& visu) {
 
-    std::cout << "[Debug] Get the new graph message and update the graph" << std::endl;
-    times_of_nodes.clear();
+    static unsigned int msg_cnt = 0;
 
+    times_of_nodes.clear();
     for (auto node : msg->graph_map.nodes) {
         std::cout << "TIME : " << std::fixed << std::setprecision(8) << (double)node.time_sec.data << " " << (double)node.time_nsec.data << std::endl;
         times_of_nodes.push_back(std::pair<uint32_t, uint32_t>(node.time_sec.data, node.time_nsec.data));
@@ -645,8 +641,7 @@ void gotGraphandOptimize(
     // Prepare the graph : marginalize + initializeOpti
     std::pair<int, int> iterations;
     ros::Time start_opti = ros::Time::now();
-    bool optimize_request = false;
-    ROS_INFO_STREAM("Do not optimize");
+    bool optimize_request = true;
     if (testing_pause) {
         std::cout << "Optimize ?" << std::endl;
         std::cin >> optimize_request;
@@ -667,6 +662,7 @@ void gotGraphandOptimize(
 
     if (optimize_prior == true) {
         ROS_DEBUG("Publishing the new prior ndt map");
+        /* TODO: why it is repeated twice? */
         publishACGOM(*oacg);
     }
 
@@ -704,26 +700,35 @@ void gotGraphandOptimize(
     grid_map_msgs::GridMap prior_grid_map_msg;
     AASS::acg::convertACGPriorMapToGridMapMsg(*oacg, prior_grid_map_msg);
     prior_map_grid_map_pub.publish(prior_grid_map_msg);
+
+    msg_cnt++;
+}
+
+std::pair<std::vector<cv::Point2f>, std::vector<cv::Point2f>> getPairedPoints(
+    AASS::acg::RvizPointsLocalization& initialiser) {
+
+    /* Get the clicked points and save as vector */
+    std::vector<cv::Point2f> slam_points, prior_points;
+    auto matches = initialiser.getMatches();
+    for (auto it = matches.begin(); it != matches.end(); ++it) {
+        auto slam_pose = it->getLandmarkPoint();
+        slam_points.push_back(slam_pose);
+
+        auto prior_pose = it->getPriorPoint();
+        prior_points.push_back(prior_pose);
+    }
+
+    return std::pair<std::vector<cv::Point2f>, std::vector<cv::Point2f>>(slam_points, prior_points);
 }
 
 void initAll(AASS::acg::AutoCompleteGraphLocalization& oacg,
              AASS::acg::RvizPointsLocalization& initialiser,
              AASS::acg::PriorLoaderInterface& priorloader) {
-    std::cout << "INIT ALL" << std::endl;
-    std::vector<cv::Point2f> slam_pt;
-    std::vector<cv::Point2f> prior_pt;
-    auto match = initialiser.getMatches();
-    for (auto it = match.begin(); it != match.end(); ++it) {
-        auto pose = it->getPriorPoint();
-        prior_pt.push_back(pose);
+    /* Get the clicked points and "rescale" and "move" the prior map */
+    ROS_INFO("Initializing the prior map");
 
-        auto pose2de = it->getLandmarkPoint();
-        slam_pt.push_back(pose2de);
-    }
-
-    priorloader.initialize(slam_pt, prior_pt);
-
-    // We use the already registered points
+    auto paried_points = getPairedPoints(initialiser);
+    priorloader.initialize(paried_points.first, paried_points.second);
     priorloader.transformOntoSLAM();
     auto graph_prior = priorloader.getGraph();
 
@@ -842,8 +847,7 @@ int main(int argc, char** argv) {
                      0.05);
     nh.param("euclidean_dist_occ_map", euclidean_dist_occ_map, false);
 
-    AASS::acg::PriorLoaderInterface priormap(prior_file, deviation, angle,
-                                             scale, center);
+    AASS::acg::PriorLoaderInterface priormap(prior_file, deviation, angle, scale, center);
     priormap.setMaxDeviationForCornerInRad(max_deviation_corner_in_prior);
     priormap.extractCornerPrior();
     priormap.transformOntoSLAM();

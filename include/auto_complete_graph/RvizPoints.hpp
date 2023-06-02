@@ -28,11 +28,9 @@ class RvizPoints {
    public:
     RvizPoints(ros::NodeHandle nh, AutoCompleteGraph* acg)
         : _flag_go(false), _nh(nh), _acg(acg) {
-        _point_clicked = _nh.subscribe<geometry_msgs::PointStamped>(
-            "/clicked_point", 10, boost::bind(&RvizPoints::clicked, this, _1));
+        _point_clicked = _nh.subscribe<geometry_msgs::PointStamped>("/clicked_point", 10, boost::bind(&RvizPoints::clicked, this, _1));
 
-        _link_pub =
-            _nh.advertise<visualization_msgs::Marker>("correct_link", 10);
+        _link_pub = _nh.advertise<visualization_msgs::Marker>("correct_link", 10);
 
         _link_markers.type = visualization_msgs::Marker::LINE_LIST;
         _link_markers.header.frame_id = "/world";

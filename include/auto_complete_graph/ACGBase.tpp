@@ -528,12 +528,15 @@ inline void AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::
 
 template <typename Prior, typename VertexPrior, typename EdgePrior>
 inline void
-AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::testInfoNonNul(
-    const std::string& before) const {}
+AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::testInfoNonNul(const std::string& before) const {
+        static int count = 0;
+        std::cout << "testInfoNonNul implemented" << count++ << " " << before << std::endl;
+        ROS_ERROR("Test the function");
+        _optimizable_graph.verifyInformationMatrices(true);
+}
 
 template <typename Prior, typename VertexPrior, typename EdgePrior>
-inline void AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::
-    updatePriorEdgeCovariance() {
+inline void AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::updatePriorEdgeCovariance() {
     _prior->updatePriorEdgeCovariance();
 }
 
@@ -606,9 +609,8 @@ AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::prepare() {
 }
 
 template <typename Prior, typename VertexPrior, typename EdgePrior>
-inline int AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::
-    optimize_simple(int max_iter) {
-    std::cout << "Check before optimization" << std::endl;
+inline int AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::optimize_simple(int max_iter) {
+    std::cout << "Check before optimization22" << std::endl;
     testInfoNonNul("At first");
 
     int count = 0;
@@ -790,9 +792,8 @@ AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::clearPrior() {
 }
 
 template <typename Prior, typename VertexPrior, typename EdgePrior>
-inline void AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::
-    checkRobotPoseNotMoved(const std::string& when) {
-    ROS_DEBUG_STREAM("testing after " << when);
+inline bool AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::
+    robotPosesHaveMoved() {
     for (auto it = _nodes_ndt.begin(); it != _nodes_ndt.end(); ++it) {
         int init_x = (*it)->initial_transfo.toVector()(0);
         int init_y = (*it)->initial_transfo.toVector()(1);
@@ -803,17 +804,15 @@ inline void AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>::
         int update_z = (*it)->estimate().toVector()(2) * 10;
 
         if (init_x != update_x || init_y != update_y || init_z != update_z) {
-            ROS_DEBUG_STREAM(" init " << init_x << " " << init_y << " "
-                                      << init_z << " == " << update_x << " "
-                                      << update_y << " " << update_z);
-            throw std::runtime_error("MOVE BASE");
+            return true;
         }
     }
+    return false;
 }
 
 template <typename Prior, typename VertexPrior, typename EdgePrior>
-const inline void
+const inline bool
 AASS::acg::AutoCompleteGraphBase<Prior, VertexPrior, EdgePrior>
-::checkRobotPoseNotMoved (const std::string& when) const {
-    checkRobotPoseNotMoved(when);
+::robotPosesHaveMoved () const {
+    return robotPosesHaveMoved();
 }

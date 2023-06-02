@@ -1,6 +1,7 @@
 #ifndef AUTOCOMPLETEGRAPH_OPTIMIZABLEGRAPH_07102016
 #define AUTOCOMPLETEGRAPH_OPTIMIZABLEGRAPH_07102016
 
+#include <ros/ros.h>
 #include "g2o/core/block_solver.h"
 #include "g2o/core/factory.h"
 #include "g2o/core/optimization_algorithm_factory.h"
@@ -20,8 +21,7 @@ namespace acg {
 class OptimizableAutoCompleteGraph : public g2o::SparseOptimizer {
    public:
     typedef g2o::BlockSolver<g2o::BlockSolverTraits<-1, -1>> SlamBlockSolver;
-    typedef g2o::LinearSolverCSparse<SlamBlockSolver::PoseMatrixType>
-        SlamLinearSolver;
+    typedef g2o::LinearSolverCSparse<SlamBlockSolver::PoseMatrixType> SlamLinearSolver;
 
    protected:
     // TODO : test with LevenbergMarquard instead (maybe doesn't scale as
@@ -38,7 +38,7 @@ class OptimizableAutoCompleteGraph : public g2o::SparseOptimizer {
 
    public:
     OptimizableAutoCompleteGraph(const g2o::SE2& sensoffset)
-        : _sensorOffsetTransf(sensoffset), _first(true) {
+    : _sensorOffsetTransf(sensoffset), _first(true) {
         auto linearSolver = g2o::make_unique<SlamLinearSolver>();
         linearSolver->setBlockOrdering(false);
         auto blockSolver = g2o::make_unique<SlamBlockSolver>(std::move(linearSolver));
@@ -55,8 +55,7 @@ class OptimizableAutoCompleteGraph : public g2o::SparseOptimizer {
     };
 
     // Forbid copy
-    OptimizableAutoCompleteGraph(const OptimizableAutoCompleteGraph& that) =
-        delete;
+    OptimizableAutoCompleteGraph(const OptimizableAutoCompleteGraph& that) = delete;
 
     virtual ~OptimizableAutoCompleteGraph() {
         delete _huber;
@@ -93,8 +92,8 @@ class OptimizableAutoCompleteGraph : public g2o::SparseOptimizer {
     /// from this. But they some stuff are broken :(
     void optimize(int iter_in = 10) {
         int iter = g2o::SparseOptimizer::optimize(iter_in);
-        if (iter > 0 && !iter) {
-            std::cerr << "Optimization failed, result might be invalid" << std::endl;
+        if (iter == 0) {
+            ROS_ERROR("Optimization failed");
         }
     }
 

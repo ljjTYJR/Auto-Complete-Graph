@@ -1,5 +1,8 @@
 #include "auto_complete_graph/PriorLoaderInterface.hpp"
 
+#define DEBUG
+#undef DEBUG
+
 void AASS::acg::PriorLoaderInterface::transformOntoSLAM() {
     assert(_same_point_prior.size() >= 2);
 
@@ -39,8 +42,7 @@ void AASS::acg::PriorLoaderInterface::transformOntoSLAM() {
     // Scale
     cv::Point2f vec1 = srcTri[1] - srcTri[0];
     cv::Point2f vec2 = dstTri[1] - dstTri[0];
-    cv::Mat mat_transfo =
-        (cv::Mat_<float>(2, 2) << vec2.x / vec1.x, 0, 0, vec2.y / vec1.y);
+    cv::Mat mat_transfo = (cv::Mat_<float>(2, 2) << vec2.x / vec1.x, 0, 0, vec2.y / vec1.y);
     double l1 = std::sqrt((vec1.x * vec1.x) + (vec1.y * vec1.y));
     double l2 = std::sqrt((vec2.x * vec2.x) + (vec2.y * vec2.y));
     double ratio = l2 / l1;
@@ -50,8 +52,7 @@ void AASS::acg::PriorLoaderInterface::transformOntoSLAM() {
     // Classify them in order
     //  				std::cout << "Gph size : " <<
     //  _graph.getNumVertices() << std::endl; int i = 0 ;
-    for (vp = boost::vertices(_prior_graph); vp.first != vp.second;
-         ++vp.first) {
+    for (vp = boost::vertices(_prior_graph); vp.first != vp.second; ++vp.first) {
         // 					std::cout << "going throught grph " << i
         // << std::endl; ++i;
         PriorVertex v = *vp.first;
@@ -87,23 +88,32 @@ void AASS::acg::PriorLoaderInterface::extractCornerPrior() {
 
     _prior_graph.clear();
 
-    cv::Mat src = cv::imread(_file, 1);
+    cv::Mat src = cv::imread(_file, CV_LOAD_IMAGE_COLOR);
+
     cv::cvtColor(src, _img_gray, CV_BGR2GRAY);
 
     AASS::vodigrex::LineFollowerGraphCorners<> graph_corners;
     graph_corners.setD(2);
-    //	graph_corners.setMaxDeviation((45 * M_PI) / 180);
     graph_corners.setMaxDeviation(_max_deviation_for_corner);
     graph_corners.inputMap(_img_gray);
     graph_corners.thin();
     auto prior_graph = graph_corners.getGraph();
 
+#ifdef DEBUG
+    /* Visualize the extracted graph */
+	cv::Mat thin_image = graph_corners.getResult();
+	AASS::vodigrex::draw<AASS::vodigrex::SimpleNode, AASS::vodigrex::SimpleEdge>(prior_graph, thin_image);
+	cv::namedWindow("Corner Image Window2", cv::WINDOW_NORMAL);  // Specify WINDOW_NORMAL flag
+	cv::resizeWindow("Corner Image Window2", 800, 600);  // Adjust the size according to your needs
+	cv::imshow("Corner Image Window2", thin_image);
+	cv::waitKey(0);
+#endif
+
     bettergraph::PseudoGraph<PriorAttr, AASS::vodigrex::SimpleEdge> prior_out;
     convertGraph(prior_graph, prior_out);
     // Very convulted code TODO
     AASS::acg::PriorLoaderInterface::PriorGraph simple_graph;
-    bettergraph::toSimpleGraph<PriorAttr, AASS::vodigrex::SimpleEdge>(
-        prior_out, simple_graph);
+    bettergraph::toSimpleGraph<PriorAttr, AASS::vodigrex::SimpleEdge>(prior_out, simple_graph);
 
     // Check if same vertex twice
 
@@ -437,8 +447,7 @@ void AASS::acg::PriorLoaderInterface::toSimpleGraph(
 void AASS::acg::PriorLoaderInterface::convertGraph(
     const bettergraph::PseudoGraph<AASS::vodigrex::SimpleNode,
                                    AASS::vodigrex::SimpleEdge>& input,
-    bettergraph::PseudoGraph<AASS::acg::PriorAttr, AASS::vodigrex::SimpleEdge>&
-        output) {
+    bettergraph::PseudoGraph<AASS::acg::PriorAttr, AASS::vodigrex::SimpleEdge>& output) {
     output.clear();
     std::pair<typename bettergraph::PseudoGraph<
                   AASS::vodigrex::SimpleNode,

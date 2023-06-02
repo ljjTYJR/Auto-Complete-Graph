@@ -47,29 +47,18 @@ class VisuAutoCompleteGraphLocalization
         : VisuAutoCompleteGraphBase<AutoCompleteGraphPriorXY,
                                     g2o::VertexXYPrior,
                                     g2o::EdgeXYPriorACG>(nh, world_frame_id) {
-        _localization_pub = _nh.advertise<visualization_msgs::Marker>(
-            "localization_markers", 10);
+        _localization_pub = _nh.advertise<visualization_msgs::Marker>("localization_markers", 10);
         _localization_pose_pub = _nh.advertise<visualization_msgs::Marker>("localization_pose_markers", 10);
-        _prior_observations_pub = _nh.advertise<visualization_msgs::Marker>(
-            "prior_observations_markers", 10);
-        _mcl_angles_pub =
-            _nh.advertise<visualization_msgs::Marker>("mcl_angles_markers", 10);
-        _robot_pose_angles_pub = _nh.advertise<visualization_msgs::Marker>(
-            "robot_pose_angles_markers", 10);
-        _last_landmark =
-            _nh.advertise<visualization_msgs::Marker>("mcl_landmark", 10);
-        _mcl_localization =
-            _nh.advertise<visualization_msgs::Marker>("mcl_localization", 10);
-        _ndt_cell_pub =
-            _nh.advertise<visualization_msgs::Marker>("ndt_cell", 10);
-        _mcl_ndt_cell_pub =
-            _nh.advertise<visualization_msgs::Marker>("mcl_ndt_cell", 10);
-        _ndt_cell_observation_pub = _nh.advertise<visualization_msgs::Marker>(
-            "ndt_cell_observations", 10);
-        _ndt_cell_association_pub = _nh.advertise<visualization_msgs::Marker>(
-            "ndt_cell_associations", 10);
-        _correct_robot_pose_pub =
-            _nh.advertise<visualization_msgs::Marker>("initial_robot_pose", 10);
+        _prior_observations_pub = _nh.advertise<visualization_msgs::Marker>("prior_observations_markers", 10);
+        _mcl_angles_pub = _nh.advertise<visualization_msgs::Marker>("mcl_angles_markers", 10);
+        _robot_pose_angles_pub = _nh.advertise<visualization_msgs::Marker>("robot_pose_angles_markers", 10);
+        _last_landmark = _nh.advertise<visualization_msgs::Marker>("mcl_landmark", 10);
+        _mcl_localization = _nh.advertise<visualization_msgs::Marker>("mcl_localization", 10);
+        _ndt_cell_pub = _nh.advertise<visualization_msgs::Marker>("ndt_cell", 10);
+        _mcl_ndt_cell_pub = _nh.advertise<visualization_msgs::Marker>("mcl_ndt_cell", 10);
+        _ndt_cell_observation_pub = _nh.advertise<visualization_msgs::Marker>("ndt_cell_observations", 10);
+        _ndt_cell_association_pub = _nh.advertise<visualization_msgs::Marker>("ndt_cell_associations", 10);
+        _correct_robot_pose_pub = _nh.advertise<visualization_msgs::Marker>("initial_robot_pose", 10);
 
         _localization_edge_markers.type = visualization_msgs::Marker::LINE_LIST;
         _localization_edge_markers.header.frame_id = world_frame_id;
@@ -117,8 +106,7 @@ class VisuAutoCompleteGraphLocalization
         _robot_pose_angles_markers.color.b = 1.0f;
         _robot_pose_angles_markers.color.a = 1.0;
 
-        _ndt_node_localization_markers.type =
-            visualization_msgs::Marker::POINTS;
+        _ndt_node_localization_markers.type = visualization_msgs::Marker::POINTS;
         _ndt_node_localization_markers.header.frame_id = world_frame_id;
         _ndt_node_localization_markers.ns = "acg";
         _ndt_node_localization_markers.id = 1;
@@ -349,8 +337,7 @@ inline void VisuAutoCompleteGraphLocalization::drawPriorObservations(
 
             g2o::SE2 robot_frame;
             for (auto vertex : obs->vertices()) {
-                g2o::VertexSE2RobotLocalization* ptr =
-                    dynamic_cast<g2o::VertexSE2RobotLocalization*>(vertex);
+                g2o::VertexSE2RobotLocalization* ptr = dynamic_cast<g2o::VertexSE2RobotLocalization*>(vertex);
                 if (ptr != NULL) {
                     robot_frame = ptr->estimate();
                     auto vertex = robot_frame.toVector();
@@ -365,9 +352,7 @@ inline void VisuAutoCompleteGraphLocalization::drawPriorObservations(
             }
 
             Eigen::Vector3d pose_inglobal_frame;
-            translateFromRobotFrameToGlobalFrame(measurement3d, robot_frame,
-                                                 pose_inglobal_frame);
-
+            translateFromRobotFrameToGlobalFrame(measurement3d, robot_frame, pose_inglobal_frame);
             geometry_msgs::Point p2;
             p2.x = pose_inglobal_frame(0);
             p2.y = pose_inglobal_frame(1);
@@ -548,12 +533,10 @@ inline void VisuAutoCompleteGraphLocalization::drawNDTCellAssociations(
     const AutoCompleteGraphLocalization& acg) {
     _ndt_cell_associations.header.stamp = ros::Time::now();
     auto edges = acg.getNDTCellAssociations();
-
     _ndt_cell_associations.points.clear();
 
     for (auto edge : edges) {
-        g2o::VertexNDTCell* cell =
-            dynamic_cast<g2o::VertexNDTCell*>(edge->vertices()[0]);
+        g2o::VertexNDTCell* cell = dynamic_cast<g2o::VertexNDTCell*>(edge->vertices()[0]);
 
         geometry_msgs::Point p_cell;
         p_cell.x = cell->estimate()(0);
@@ -563,8 +546,7 @@ inline void VisuAutoCompleteGraphLocalization::drawNDTCellAssociations(
         auto wall = edge->getPriorWall();
 
         for (auto vert : wall->vertices()) {
-            g2o::VertexPointXYACG* ptr =
-                dynamic_cast<g2o::VertexPointXYACG*>(vert);
+            g2o::VertexPointXYACG* ptr = dynamic_cast<g2o::VertexPointXYACG*>(vert);
 
             geometry_msgs::Point p;
             auto vertex = ptr->estimate();
@@ -578,6 +560,7 @@ inline void VisuAutoCompleteGraphLocalization::drawNDTCellAssociations(
     }
     _ndt_cell_association_pub.publish(_ndt_cell_associations);
 }
+
 inline void VisuAutoCompleteGraphLocalization::drawNDTCells(
     const AutoCompleteGraphLocalization& acg) {
     _ndt_cells.header.stamp = ros::Time::now();

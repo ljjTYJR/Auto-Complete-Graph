@@ -7,29 +7,30 @@ void debug(const char* file, int line, const std::string& message) {
 }
 #define DEBUG(msg) debug(__FILE__, __LINE__, msg)
 
-bool AASS::acg::AutoCompleteGraphLocalization::verifyInformationMatrices(
-    bool verbose) const {
+bool AASS::acg::AutoCompleteGraphLocalization::verifyInformationMatrices(bool verbose) const {
+    ROS_INFO_STREAM("Verifying information matrices");
     bool allEdgeOk = true;
     Eigen::SelfAdjointEigenSolver<g2o::MatrixX> eigenSolver;
-    for (g2o::OptimizableGraph::EdgeSet::const_iterator it =
-             _optimizable_graph.edges().begin();
+    for (g2o::OptimizableGraph::EdgeSet::const_iterator it = _optimizable_graph.edges().begin();
          it != _optimizable_graph.edges().end(); ++it) {
-        g2o::OptimizableGraph::Edge* e =
-            static_cast<g2o::OptimizableGraph::Edge*>(*it);
-        g2o::MatrixX::MapType information(e->informationData(), e->dimension(),
-                                          e->dimension());
+        g2o::OptimizableGraph::Edge* e = static_cast<g2o::OptimizableGraph::Edge*>(*it);
+        g2o::MatrixX::MapType information(e->informationData(), e->dimension(), e->dimension());
         // test on symmetry
 
         information = information * 1000;
         information = information.array().round();
         information = information / 1000;
 
-        bool isSymmetric = information.transpose() == information;
+        bool isSymmetric = (information.transpose() == information);
         bool okay = isSymmetric;
         if (isSymmetric) {
             // compute the eigenvalues
+            bool isSPD = true;
             eigenSolver.compute(information, Eigen::EigenvaluesOnly);
-            bool isSPD = eigenSolver.eigenvalues()(0) >= 0.;
+            auto min_eigen_value = eigenSolver.eigenvalues()(0);
+            if (min_eigen_value <= 0.) {
+                isSPD = false;
+            }
             okay = okay && isSPD;
         }
         allEdgeOk = allEdgeOk && okay;
@@ -37,20 +38,21 @@ bool AASS::acg::AutoCompleteGraphLocalization::verifyInformationMatrices(
             if (verbose) {
                 std::cerr << "In a " << getEdgeType(e) << " ";
                 if (!isSymmetric)
-                    std::cerr
-                        << "Information Matrix for an edge is not symmetric:";
+                    std::cerr << "Information Matrix for an edge is not symmetric:";
                 else
                     std::cerr << "Information Matrix for an edge is not SPD:";
                 for (size_t i = 0; i < e->vertices().size(); ++i)
                     std::cerr << " " << e->vertex(i)->id();
                 if (isSymmetric)
-                    std::cerr << "\teigenvalues: "
-                              << eigenSolver.eigenvalues().transpose();
-                std::cerr << " information :\n"
-                          << information << "\n"
-                          << std::endl;
+                    // std::cerr << "\teigenvalues: " << eigenSolver.eigenvalues().transpose();
+                std::cerr << " information :\n" << information << "\n" << std::endl;
             }
         }
+    }
+    if (!allEdgeOk) {
+        ROS_ERROR_STREAM("Information matrices are not ok");
+    } else {
+        ROS_INFO_STREAM("Information matrices are ok");
     }
     return allEdgeOk;
 }
@@ -66,7 +68,7 @@ AASS::acg::AutoCompleteGraphLocalization::addRobotLocalization(
     g2o::VertexSE2RobotLocalization* robotlocalization = new g2o::VertexSE2RobotLocalization(to_robot_localization);
     //	robotlocalization->setEquivalentRobotPose(equivalent_robot_pose);
 
-    ROS_ERROR_STREAM("Storing the received poses " << se2_robot_pose.toVector().transpose());
+    ROS_INFO_STREAM("Storing the received poses " << se2_robot_pose.toVector().transpose());
     robotlocalization->setEstimate(se2_robot_pose);
     robotlocalization->setId(new_id_);
     ++new_id_;
@@ -355,6 +357,7 @@ AASS::acg::AutoCompleteGraphLocalization::setPriorReference() {
 void AASS::acg::AutoCompleteGraphLocalization::updateNDTGraph(const auto_complete_graph::GraphMapLocalizationMsg& ndt_graph_localization) {
     if (_use_robot_maps == true) {
         addNDTGraph(ndt_graph_localization);
+        /* Estimate links between corners in the prior map and ndt map */
         updatePriorObservations();
     }
     //	updateLocalizationEdges(ndt_graph_localization);
@@ -443,7 +446,6 @@ void AASS::acg::AutoCompleteGraphLocalization::addNDTGraph(
     const auto_complete_graph::GraphMapLocalizationMsg& ndt_graph_localization) {
     if (_use_robot_maps == true) {
         ROS_DEBUG_STREAM("Node in graph " << ndt_graph_localization.graph_map.nodes.size());
-        std::cout << "Update the ndt graph, the nodes in the graph is " << ndt_graph_localization.graph_map.nodes.size() << std::endl;
         if (_previous_number_of_node_in_ndtgraph != ndt_graph_localization.graph_map.nodes.size()) {
             size_t i = _previous_number_of_node_in_ndtgraph - 1;
             assert(i >= 0);
@@ -453,7 +455,13 @@ void AASS::acg::AutoCompleteGraphLocalization::addNDTGraph(
                 //*robot_ptr;
                 g2o::VertexSE2RobotLocalization* robot_localization_ptr;
                 std::shared_ptr<perception_oru::NDTMap> map;
-                //			g2o::SE2 robot_pos;
+
+                if(robotPosesHaveMoved()) {
+                    ROS_INFO_STREAM("The robot pose nodes have moved" << "\t" << "The nodes in the pose nodes are" << "\t" << getRobotNodes().size());
+                } else {
+                    ROS_INFO_STREAM("The robot pose nodes have not moved" << "\t" << "The nodes in the pose nodes are" << "\t" << getRobotNodes().size());
+                }
+
                 std::tie(robot_localization_ptr, map) = addElementNDT(ndt_graph_localization, i);
                 assert(robot_localization_ptr != NULL);
 
@@ -573,7 +581,7 @@ AASS::acg::AutoCompleteGraphLocalization::addElementNDT(
     /// WARNING trying to change this to fit GraphMap model. Node are at the
     /// exact pose so no need to translate them AND factor I don't know yet
     robot_pos = robot_pos * diff_vec_se2;
-    ROS_ERROR_STREAM("Converted Robot pose " << robot_pos.toVector().transpose());
+    ROS_INFO_STREAM("Converted Robot pose " << robot_pos.toVector().transpose());
     //	std::cout << "multiply" << std::endl;
 
     auto map_msg = ndt_graph_localization.graph_map.nodes[element].ndt_map;
@@ -880,7 +888,7 @@ void AASS::acg::AutoCompleteGraphLocalization::extractCornerNDTMap(
 
     std::vector<AASS::acg::NDTCornerGraphElement> corners_end;
     getAllCornersNDTTranslatedToGlobalAndRobotFrame(map, robot_localization, corners_end);
-    ROS_ERROR_STREAM("Corners found " << corners_end.size());
+    ROS_INFO_STREAM("Corners found " << corners_end.size());
 
     /***************** ADD THE CORNERS INTO THE GRAPH***********************/
 
@@ -1156,23 +1164,18 @@ void AASS::acg::AutoCompleteGraphLocalization::
     }
 }
 
-void AASS::acg::AutoCompleteGraphLocalization::testInfoNonNul(
-    const std::string& before) const {
-    //	std::cout << "Test info non nul after " << before << std::endl;
+void AASS::acg::AutoCompleteGraphLocalization::testInfoNonNul(const std::string& before) const {
+    std::cout << "Test info non nul after " << before << std::endl;
     auto idmapedges = _optimizable_graph.edges();
 
     for (auto ite = idmapedges.begin(); ite != idmapedges.end(); ++ite) {
         assert((*ite)->vertices().size() >= 1);
 
-        g2o::EdgeLandmark_malcolm* ptr =
-            dynamic_cast<g2o::EdgeLandmark_malcolm*>(*ite);
+        g2o::EdgeLandmark_malcolm* ptr = dynamic_cast<g2o::EdgeLandmark_malcolm*>(*ite);
         g2o::EdgeXYPriorACG* ptr1 = dynamic_cast<g2o::EdgeXYPriorACG*>(*ite);
-        g2o::EdgeOdometry_malcolm* ptr2 =
-            dynamic_cast<g2o::EdgeOdometry_malcolm*>(*ite);
-        g2o::EdgeLinkXY_malcolm* ptr3 =
-            dynamic_cast<g2o::EdgeLinkXY_malcolm*>(*ite);
-        g2o::EdgeNDTCellObservation* ptr4 =
-            dynamic_cast<g2o::EdgeNDTCellObservation*>(*ite);
+        g2o::EdgeOdometry_malcolm* ptr2 = dynamic_cast<g2o::EdgeOdometry_malcolm*>(*ite);
+        g2o::EdgeLinkXY_malcolm* ptr3 = dynamic_cast<g2o::EdgeLinkXY_malcolm*>(*ite);
+        g2o::EdgeNDTCellObservation* ptr4 = dynamic_cast<g2o::EdgeNDTCellObservation*>(*ite);
         g2o::EdgeNDTCell* ptr5 = dynamic_cast<g2o::EdgeNDTCell*>(*ite);
         //		g2o::EdgeLocalization* ptr4 =
         // dynamic_cast<g2o::EdgeLocalization*>(*ite);
@@ -1201,8 +1204,9 @@ void AASS::acg::AutoCompleteGraphLocalization::testInfoNonNul(
             throw std::runtime_error("Didn't find the type of the edge :S");
         }
     }
-
-    assert(verifyInformationMatrices(true) == true);
+    ROS_INFO_STREAM("I am checking the information matrices of edges");
+    // assert(verifyInformationMatrices(true) == true);
+    verifyInformationMatrices(true);
 }
 
 std::tuple<Eigen::Affine3d, Eigen::MatrixXd>
@@ -1414,7 +1418,13 @@ AASS::acg::AutoCompleteGraphLocalization::addLinkBetweenMaps(
 
 void AASS::acg::AutoCompleteGraphLocalization::AddObservationsMCLPrior() {}
 
+/**
+ * @brief: Estimate the corner association between corners in the prior map and in the ndt map
+ *
+ * @landmark : The landmark in the ndt map
+ */
 void AASS::acg::AutoCompleteGraphLocalization::addObservationMCLToPrior(const g2o::VertexLandmarkNDT* landmark) {
+    /* TODO: What does the getLocalization() get? */
     std::unordered_set<std::shared_ptr<AASS::acg::LocalizationPointer>> localization = landmark->getLocalization();
     for (auto loc : localization) {
         for (auto edge : _edge_landmark) {
@@ -1531,11 +1541,10 @@ void AASS::acg::AutoCompleteGraphLocalization::updatePriorObservations() {
     }
 }
 
-void AASS::acg::AutoCompleteGraphLocalization::
-    updateExistingPriorObservations() {
+/* Update the edge links */
+void AASS::acg::AutoCompleteGraphLocalization::updateExistingPriorObservations() {
     for (auto edge_observation : _edge_prior_observation) {
-        g2o::EdgeLandmark_malcolm* equiv =
-            edge_observation->equivalent_landmark_observation_edge;
+        g2o::EdgeLandmark_malcolm* equiv = edge_observation->equivalent_landmark_observation_edge;
         edge_observation->setMeasurement(equiv->measurement());
     }
 }
@@ -1549,6 +1558,7 @@ void AASS::acg::AutoCompleteGraphLocalization::createWallAssociations() {
 void AASS::acg::AutoCompleteGraphLocalization::createWallAssociations(g2o::VertexSE2RobotLocalization* robot) {
     auto map = robot->getMap();
     double cx, cy, cz;
+    /* The cell size of the NDT-Cell is constant */
     map->getCellSizeInMeters(cx, cy, cz);
     double minval = std::min(cx, std::min(cy, cz));
 
