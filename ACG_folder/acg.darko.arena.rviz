@@ -9,7 +9,6 @@ Panels:
         - /TF1/Frames1
         - /TF1/Tree1
         - /PointCloud21/Autocompute Value Bounds1
-        - /ndt_cell_associations1
         - /recevied_pose_nodes1
       Splitter Ratio: 0.4533030092716217
     Tree Height: 797
@@ -132,303 +131,33 @@ Visualization Manager:
           Value: false
         pose_10:
           Value: false
-        pose_100:
-          Value: true
-        pose_101:
-          Value: true
-        pose_102:
-          Value: true
-        pose_103:
-          Value: true
-        pose_104:
-          Value: true
-        pose_105:
-          Value: true
-        pose_106:
-          Value: true
-        pose_107:
-          Value: true
-        pose_108:
-          Value: true
-        pose_109:
-          Value: true
         pose_11:
           Value: false
-        pose_110:
-          Value: true
-        pose_111:
-          Value: true
-        pose_112:
-          Value: true
-        pose_113:
-          Value: true
-        pose_114:
-          Value: true
-        pose_115:
-          Value: true
-        pose_116:
-          Value: true
-        pose_117:
-          Value: true
-        pose_118:
-          Value: true
-        pose_119:
-          Value: true
         pose_12:
           Value: false
-        pose_120:
-          Value: true
-        pose_121:
-          Value: true
-        pose_122:
-          Value: true
-        pose_123:
-          Value: true
-        pose_124:
-          Value: true
-        pose_125:
-          Value: true
-        pose_126:
-          Value: true
-        pose_127:
-          Value: true
-        pose_128:
-          Value: true
-        pose_129:
-          Value: true
         pose_13:
           Value: false
-        pose_130:
-          Value: true
-        pose_131:
-          Value: true
-        pose_132:
-          Value: true
-        pose_133:
-          Value: true
-        pose_134:
-          Value: true
-        pose_135:
-          Value: true
-        pose_136:
-          Value: true
-        pose_137:
-          Value: true
-        pose_138:
-          Value: true
-        pose_139:
-          Value: true
         pose_14:
           Value: false
-        pose_140:
-          Value: true
-        pose_141:
-          Value: true
-        pose_142:
-          Value: true
-        pose_143:
-          Value: true
-        pose_144:
-          Value: true
-        pose_145:
-          Value: true
-        pose_146:
-          Value: true
-        pose_147:
-          Value: true
-        pose_148:
-          Value: true
-        pose_149:
-          Value: true
         pose_15:
           Value: false
-        pose_150:
-          Value: true
-        pose_151:
-          Value: true
-        pose_152:
-          Value: true
-        pose_153:
-          Value: true
-        pose_154:
-          Value: true
-        pose_155:
-          Value: true
-        pose_156:
-          Value: true
-        pose_157:
-          Value: true
-        pose_158:
-          Value: true
-        pose_159:
-          Value: true
         pose_16:
           Value: false
-        pose_160:
-          Value: true
-        pose_161:
-          Value: true
-        pose_162:
-          Value: true
-        pose_163:
-          Value: true
-        pose_164:
-          Value: true
-        pose_165:
-          Value: true
-        pose_166:
-          Value: true
-        pose_167:
-          Value: true
-        pose_168:
-          Value: true
-        pose_169:
-          Value: true
         pose_17:
           Value: false
-        pose_170:
-          Value: true
-        pose_171:
-          Value: true
-        pose_172:
-          Value: true
-        pose_173:
-          Value: true
-        pose_174:
-          Value: true
-        pose_175:
-          Value: true
-        pose_176:
-          Value: true
-        pose_177:
-          Value: true
-        pose_178:
-          Value: true
-        pose_179:
-          Value: true
         pose_18:
           Value: false
-        pose_180:
-          Value: true
-        pose_181:
-          Value: true
-        pose_182:
-          Value: true
-        pose_183:
-          Value: true
-        pose_184:
-          Value: true
-        pose_185:
-          Value: true
-        pose_186:
-          Value: true
-        pose_187:
-          Value: true
-        pose_188:
-          Value: true
-        pose_189:
-          Value: true
         pose_19:
           Value: false
-        pose_190:
-          Value: true
-        pose_191:
-          Value: true
-        pose_192:
-          Value: true
-        pose_193:
-          Value: true
-        pose_194:
-          Value: true
-        pose_195:
-          Value: true
-        pose_196:
-          Value: true
-        pose_197:
-          Value: true
-        pose_198:
-          Value: true
-        pose_199:
-          Value: true
         pose_2:
           Value: false
         pose_20:
           Value: false
-        pose_200:
-          Value: true
-        pose_201:
-          Value: true
-        pose_202:
-          Value: true
-        pose_203:
-          Value: true
-        pose_204:
-          Value: true
-        pose_205:
-          Value: true
-        pose_206:
-          Value: true
-        pose_207:
-          Value: true
-        pose_208:
-          Value: true
-        pose_209:
-          Value: true
         pose_21:
-          Value: true
-        pose_210:
-          Value: true
-        pose_211:
-          Value: true
-        pose_212:
-          Value: true
-        pose_213:
-          Value: true
-        pose_214:
-          Value: true
-        pose_215:
-          Value: true
-        pose_216:
-          Value: true
-        pose_217:
-          Value: true
-        pose_218:
-          Value: true
-        pose_219:
           Value: true
         pose_22:
           Value: true
-        pose_220:
-          Value: true
-        pose_221:
-          Value: true
-        pose_222:
-          Value: true
-        pose_223:
-          Value: true
-        pose_224:
-          Value: true
-        pose_225:
-          Value: true
-        pose_226:
-          Value: true
-        pose_227:
-          Value: true
-        pose_228:
-          Value: true
-        pose_229:
-          Value: true
         pose_23:
-          Value: true
-        pose_230:
-          Value: true
-        pose_231:
-          Value: true
-        pose_232:
-          Value: true
-        pose_233:
-          Value: true
-        pose_234:
           Value: true
         pose_24:
           Value: true
@@ -536,66 +265,10 @@ Visualization Manager:
           Value: true
         pose_71:
           Value: true
-        pose_72:
-          Value: true
-        pose_73:
-          Value: true
-        pose_74:
-          Value: true
-        pose_75:
-          Value: true
-        pose_76:
-          Value: true
-        pose_77:
-          Value: true
-        pose_78:
-          Value: true
-        pose_79:
-          Value: true
         pose_8:
           Value: false
-        pose_80:
-          Value: true
-        pose_81:
-          Value: true
-        pose_82:
-          Value: true
-        pose_83:
-          Value: true
-        pose_84:
-          Value: true
-        pose_85:
-          Value: true
-        pose_86:
-          Value: true
-        pose_87:
-          Value: true
-        pose_88:
-          Value: true
-        pose_89:
-          Value: true
         pose_9:
           Value: false
-        pose_90:
-          Value: true
-        pose_91:
-          Value: true
-        pose_92:
-          Value: true
-        pose_93:
-          Value: true
-        pose_94:
-          Value: true
-        pose_95:
-          Value: true
-        pose_96:
-          Value: true
-        pose_97:
-          Value: true
-        pose_98:
-          Value: true
-        pose_99:
-          Value: true
         qualisys_frame:
           Value: false
         robot_arm_link0:
@@ -698,6 +371,12 @@ Visualization Manager:
           Value: false
         robot_k4a_bottom_camera_visor:
           Value: false
+        robot_k4a_bottom_gravity_link:
+          Value: true
+        robot_k4a_bottom_imu_filtered_link:
+          Value: true
+        robot_k4a_bottom_imu_link:
+          Value: true
         robot_k4a_bottom_link:
           Value: false
         robot_k4a_pole_link:
@@ -710,6 +389,12 @@ Visualization Manager:
           Value: false
         robot_k4a_top_camera_visor:
           Value: false
+        robot_k4a_top_gravity_link:
+          Value: true
+        robot_k4a_top_imu_filtered_link:
+          Value: true
+        robot_k4a_top_imu_link:
+          Value: true
         robot_k4a_top_link:
           Value: false
         robot_lidar_pole_link:
@@ -748,603 +433,20 @@ Visualization Manager:
       Show Axes: true
       Show Names: true
       Tree:
-        world:
-          latest:
-            {}
-          pose_1:
-            {}
-          pose_10:
-            {}
-          pose_100:
-            {}
-          pose_101:
-            {}
-          pose_102:
-            {}
-          pose_103:
-            {}
-          pose_104:
-            {}
-          pose_105:
-            {}
-          pose_106:
-            {}
-          pose_107:
-            {}
-          pose_108:
-            {}
-          pose_109:
-            {}
-          pose_11:
-            {}
-          pose_110:
-            {}
-          pose_111:
-            {}
-          pose_112:
-            {}
-          pose_113:
-            {}
-          pose_114:
-            {}
-          pose_115:
-            {}
-          pose_116:
-            {}
-          pose_117:
-            {}
-          pose_118:
-            {}
-          pose_119:
-            {}
-          pose_12:
-            {}
-          pose_120:
-            {}
-          pose_121:
-            {}
-          pose_122:
-            {}
-          pose_123:
-            {}
-          pose_124:
-            {}
-          pose_125:
-            {}
-          pose_126:
-            {}
-          pose_127:
-            {}
-          pose_128:
-            {}
-          pose_129:
-            {}
-          pose_13:
-            {}
-          pose_130:
-            {}
-          pose_131:
-            {}
-          pose_132:
-            {}
-          pose_133:
-            {}
-          pose_134:
-            {}
-          pose_135:
-            {}
-          pose_136:
-            {}
-          pose_137:
-            {}
-          pose_138:
-            {}
-          pose_139:
-            {}
-          pose_14:
-            {}
-          pose_140:
-            {}
-          pose_141:
-            {}
-          pose_142:
-            {}
-          pose_143:
-            {}
-          pose_144:
-            {}
-          pose_145:
-            {}
-          pose_146:
-            {}
-          pose_147:
-            {}
-          pose_148:
-            {}
-          pose_149:
-            {}
-          pose_15:
-            {}
-          pose_150:
-            {}
-          pose_151:
-            {}
-          pose_152:
-            {}
-          pose_153:
-            {}
-          pose_154:
-            {}
-          pose_155:
-            {}
-          pose_156:
-            {}
-          pose_157:
-            {}
-          pose_158:
-            {}
-          pose_159:
-            {}
-          pose_16:
-            {}
-          pose_160:
-            {}
-          pose_161:
-            {}
-          pose_162:
-            {}
-          pose_163:
-            {}
-          pose_164:
-            {}
-          pose_165:
-            {}
-          pose_166:
-            {}
-          pose_167:
-            {}
-          pose_168:
-            {}
-          pose_169:
-            {}
-          pose_17:
-            {}
-          pose_170:
-            {}
-          pose_171:
-            {}
-          pose_172:
-            {}
-          pose_173:
-            {}
-          pose_174:
-            {}
-          pose_175:
-            {}
-          pose_176:
-            {}
-          pose_177:
-            {}
-          pose_178:
-            {}
-          pose_179:
-            {}
-          pose_18:
-            {}
-          pose_180:
-            {}
-          pose_181:
-            {}
-          pose_182:
-            {}
-          pose_183:
-            {}
-          pose_184:
-            {}
-          pose_185:
-            {}
-          pose_186:
-            {}
-          pose_187:
-            {}
-          pose_188:
-            {}
-          pose_189:
-            {}
-          pose_19:
-            {}
-          pose_190:
-            {}
-          pose_191:
-            {}
-          pose_192:
-            {}
-          pose_193:
-            {}
-          pose_194:
-            {}
-          pose_195:
-            {}
-          pose_196:
-            {}
-          pose_197:
-            {}
-          pose_198:
-            {}
-          pose_199:
-            {}
-          pose_2:
-            {}
-          pose_20:
-            {}
-          pose_200:
-            {}
-          pose_201:
-            {}
-          pose_202:
-            {}
-          pose_203:
-            {}
-          pose_204:
-            {}
-          pose_205:
-            {}
-          pose_206:
-            {}
-          pose_207:
-            {}
-          pose_208:
-            {}
-          pose_209:
-            {}
-          pose_21:
-            {}
-          pose_210:
-            {}
-          pose_211:
-            {}
-          pose_212:
-            {}
-          pose_213:
-            {}
-          pose_214:
-            {}
-          pose_215:
-            {}
-          pose_216:
-            {}
-          pose_217:
-            {}
-          pose_218:
-            {}
-          pose_219:
-            {}
-          pose_22:
-            {}
-          pose_220:
-            {}
-          pose_221:
-            {}
-          pose_222:
-            {}
-          pose_223:
-            {}
-          pose_224:
-            {}
-          pose_225:
-            {}
-          pose_226:
-            {}
-          pose_227:
-            {}
-          pose_228:
-            {}
-          pose_229:
-            {}
-          pose_23:
-            {}
-          pose_230:
-            {}
-          pose_231:
-            {}
-          pose_232:
-            {}
-          pose_233:
-            {}
-          pose_234:
-            {}
-          pose_24:
-            {}
-          pose_25:
-            {}
-          pose_26:
-            {}
-          pose_27:
-            {}
-          pose_28:
-            {}
-          pose_29:
-            {}
-          pose_3:
-            {}
-          pose_30:
-            {}
-          pose_31:
-            {}
-          pose_32:
-            {}
-          pose_33:
-            {}
-          pose_34:
-            {}
-          pose_35:
-            {}
-          pose_36:
-            {}
-          pose_37:
-            {}
-          pose_38:
-            {}
-          pose_39:
-            {}
-          pose_4:
-            {}
-          pose_40:
-            {}
-          pose_41:
-            {}
-          pose_42:
-            {}
-          pose_43:
-            {}
-          pose_44:
-            {}
-          pose_45:
-            {}
-          pose_46:
-            {}
-          pose_47:
-            {}
-          pose_48:
-            {}
-          pose_49:
-            {}
-          pose_5:
-            {}
-          pose_50:
-            {}
-          pose_51:
-            {}
-          pose_52:
-            {}
-          pose_53:
-            {}
-          pose_54:
-            {}
-          pose_55:
-            {}
-          pose_56:
-            {}
-          pose_57:
-            {}
-          pose_58:
-            {}
-          pose_59:
-            {}
-          pose_6:
-            {}
-          pose_60:
-            {}
-          pose_61:
-            {}
-          pose_62:
-            {}
-          pose_63:
-            {}
-          pose_64:
-            {}
-          pose_65:
-            {}
-          pose_66:
-            {}
-          pose_67:
-            {}
-          pose_68:
-            {}
-          pose_69:
-            {}
-          pose_7:
-            {}
-          pose_70:
-            {}
-          pose_71:
-            {}
-          pose_72:
-            {}
-          pose_73:
-            {}
-          pose_74:
-            {}
-          pose_75:
-            {}
-          pose_76:
-            {}
-          pose_77:
-            {}
-          pose_78:
-            {}
-          pose_79:
-            {}
-          pose_8:
-            {}
-          pose_80:
-            {}
-          pose_81:
-            {}
-          pose_82:
-            {}
-          pose_83:
-            {}
-          pose_84:
-            {}
-          pose_85:
-            {}
-          pose_86:
-            {}
-          pose_87:
-            {}
-          pose_88:
-            {}
-          pose_89:
-            {}
-          pose_9:
-            {}
-          pose_90:
-            {}
-          pose_91:
-            {}
-          pose_92:
-            {}
-          pose_93:
-            {}
-          pose_94:
-            {}
-          pose_95:
-            {}
-          pose_96:
-            {}
-          pose_97:
-            {}
-          pose_98:
-            {}
-          pose_99:
-            {}
-          robot_odom:
-            fuser_base_link:
-              {}
-            mcl_tf:
-              {}
-            robot_base_footprint:
-              naos_robot_frame:
-                {}
-              robot_base_link:
-                robot_arm_link0:
-                  robot_arm_link1:
-                    robot_arm_link2:
-                      robot_arm_link3:
-                        robot_arm_link4:
-                          robot_arm_link5:
-                            robot_arm_link6:
-                              robot_arm_link7:
-                                robot_arm_link8:
-                                  robot_gripper_base_link:
-                                    robot_gripper_finger1_base_link:
-                                      robot_gripper_finger1_link:
-                                        robot_gripper_finger1_tip_link:
-                                          {}
-                                      robot_gripper_finger1_outlet_link:
-                                        {}
-                                    robot_gripper_finger2_base_link:
-                                      robot_gripper_finger2_link:
-                                        robot_gripper_finger2_tip_link:
-                                          {}
-                                      robot_gripper_finger2_outlet_link:
-                                        {}
-                                    robot_gripper_finger3_base_link:
-                                      robot_gripper_finger3_link:
-                                        robot_gripper_finger3_tip_link:
-                                          {}
-                                      robot_gripper_finger3_outlet_link:
-                                        {}
-                robot_back_left_wheel_link:
-                  {}
-                robot_back_right_wheel_link:
-                  {}
-                robot_base_chapa:
-                  {}
-                robot_base_docking_contact:
-                  {}
-                robot_base_logo_front:
-                  {}
-                robot_base_logo_left:
-                  {}
-                robot_base_logo_rear:
-                  {}
-                robot_base_logo_right:
-                  {}
-                robot_front_laser_base_link:
-                  robot_front_laser_link:
-                    {}
-                robot_front_laser_support_link:
-                  {}
-                robot_front_left_wheel_link:
-                  {}
-                robot_front_rgbd_camera_link:
-                  robot_front_rgbd_camera_depth_frame:
-                    robot_front_rgbd_camera_depth_optical_frame:
-                      {}
-                  robot_front_rgbd_camera_rgb_frame:
-                    robot_front_rgbd_camera_rgb_optical_frame:
-                      {}
-                robot_front_right_wheel_link:
-                  {}
-                robot_imu_link:
-                  {}
-                robot_k4a_pole_link:
-                  robot_k4a_pole_sup_link:
-                    robot_k4a_bottom_link:
-                      robot_k4a_bottom_camera_base:
-                        {}
-                      robot_k4a_bottom_camera_body:
-                        {}
-                      robot_k4a_bottom_camera_visor:
-                        {}
-                    robot_pantilt_base_link:
-                      robot_pantilt_pan_link:
-                        robot_pantilt_tilt_link:
-                          robot_k4a_top_link:
-                            robot_k4a_top_camera_base:
-                              {}
-                            robot_k4a_top_camera_body:
-                              {}
-                            robot_k4a_top_camera_visor:
-                              {}
-                robot_lidar_pole_link:
-                  robot_lidar_pole_sup_link:
-                    robot_fisheye_front_link:
-                      robot_fisheye_front_optical_frame:
-                        {}
-                    robot_fisheye_rear_link:
-                      robot_fisheye_rear_optical_frame:
-                        {}
-                    robot_lidar_top_base_link:
-                      robot_lidar_top_link:
-                        lidar_top/os_sensor:
-                          lidar_top/os_imu:
-                            {}
-                          lidar_top/os_lidar:
-                            {}
-                robot_projector_link:
-                  {}
-                robot_rear_laser_base_link:
-                  robot_rear_laser_link:
-                    {}
-                robot_rear_laser_support_link:
-                  {}
-          submap_node0:
-            {}
+        robot_odom:
+          {}
       Update Interval: 0
       Value: true
     - Alpha: 0.5
       Class: rviz/Map
       Color Scheme: map
       Draw Behind: true
-      Enabled: false
+      Enabled: true
       Name: Map
-      Topic: /graph_node/latest_occupancy_grid_map
+      Topic: /acg_node_localization/occupancy_grid_acg_global
       Unreliable: false
       Use Timestamp: false
-      Value: false
+      Value: true
     - Alpha: 1
       Arrow Length: 0.30000001192092896
       Axes Length: 0.30000001192092896
@@ -1446,13 +548,13 @@ Visualization Manager:
       Use rainbow: true
       Value: true
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /acg_node_localization/prior_marker
       Name: prior_marker
       Namespaces:
-        acg: true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /acg_node_localization/prior_nodes_marker
@@ -1474,7 +576,7 @@ Visualization Manager:
       Marker Topic: /acg_node_localization/observation_edge
       Name: robot_pose_to_ndt_corner
       Namespaces:
-        acg: true
+        {}
       Queue Size: 100
       Value: true
     - Class: rviz/Marker
@@ -1482,7 +584,7 @@ Visualization Manager:
       Marker Topic: /acg_node_localization/ndt_nodes_marker
       Name: robot_ndt_node
       Namespaces:
-        acg: true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -1537,7 +639,7 @@ Visualization Manager:
       Marker Topic: /acg_node_localization/localization_pose_markers
       Name: loc_pose
       Namespaces:
-        acg: true
+        {}
       Queue Size: 100
       Value: true
     - Alpha: 1
@@ -1559,19 +661,19 @@ Visualization Manager:
       Unreliable: false
       Value: true
     - Class: rviz/Marker
-      Enabled: true
+      Enabled: false
       Marker Topic: /acg_node_localization/ndt_cell_associations
       Name: ndt_cell_associations
       Namespaces:
-        acg: true
+        {}
       Queue Size: 100
-      Value: true
+      Value: false
     - Class: rviz/Marker
       Enabled: true
       Marker Topic: /acg_node_localization/received_robot_poses
       Name: recevied_pose_nodes
       Namespaces:
-        acg: true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -1602,16 +704,16 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 150.90750122070312
+      Distance: 359.0466003417969
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -61.54974365234375
-        Y: 33.6812858581543
-        Z: -8.75672721862793
+        X: -27.83998680114746
+        Y: -28.271625518798828
+        Z: -8.692066192626953
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
@@ -1620,7 +722,7 @@ Visualization Manager:
       Pitch: 1.5697963237762451
       Target Frame: latest
       Value: Orbit (rviz)
-      Yaw: 1.677191972732544
+      Yaw: 1.582192063331604
     Saved:
       - Class: rviz/Orbit
         Distance: 59.950599670410156

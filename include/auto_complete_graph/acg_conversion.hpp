@@ -157,7 +157,7 @@ inline bool ACGtoOccupancyGrid(
     double max_y = -std::numeric_limits<double>::infinity();
     for (auto it = edges.begin(); it != edges.end(); ++it) {
         if ((*it)->vertices().size() != 2) {
-            ROS_INFO("The edge is not connected to two vertices. It is not a line. It is a %d", (*it)->vertices().size());
+            ROS_INFO("The edge is not connected to two vertices. The line is wrong, the number of vertices is %d", (*it)->vertices().size());
             return false;
         }
         auto v1 = dynamic_cast<g2o::VertexXYPrior*>((*it)->vertices()[0]);
@@ -196,16 +196,17 @@ inline bool ACGtoOccupancyGrid(
     std::vector<nav_msgs::OccupancyGrid::ConstPtr> grids;
     grids.push_back(ptr_prior_occ);
 
-    if (acg.getRobotNodes().size() != 0) {
-        std::vector<g2o::VertexSE2RobotPose*>::const_iterator it = acg.getRobotNodes().begin() + start;
-        std::vector<g2o::VertexSE2RobotPose*>::const_iterator it_end = acg.getRobotNodes().end();
+    /* TODO: Currently, we only need the occupancy grid map of the prior map */
+    // if (acg.getRobotNodes().size() != 0) {
+    //     std::vector<g2o::VertexSE2RobotPose*>::const_iterator it = acg.getRobotNodes().begin() + start;
+    //     std::vector<g2o::VertexSE2RobotPose*>::const_iterator it_end = acg.getRobotNodes().end();
 
-        if (end != -1) {
-            it_end = acg.getRobotNodes().begin() + end;
-        }
+    //     if (end != -1) {
+    //         it_end = acg.getRobotNodes().begin() + end;
+    //     }
 
-        ACGNdtNodetoVecGrids(acg, it, it_end, grids);
-    }
+    //     ACGNdtNodetoVecGrids(acg, it, it_end, grids);
+    // }
     if (grids.size() > 0) {
         occ_out = occupancy_grid_utils::combineGrids(grids);
         occ_out->header.frame_id = "/robot_odom";
